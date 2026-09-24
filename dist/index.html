@@ -276,6 +276,12 @@ button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 3px so
   .progress > div, .c { transition: none; }
 }
 
+/* ——— Переключатель языка ——— */
+.home-bar .title { text-align: left; }
+.lang-switch { display: flex; flex: none; background: rgba(255,255,255,.15); border-radius: 10px; padding: 3px; gap: 2px; }
+.lang-switch button { border: 0; background: transparent; color: #fff; font-weight: 700; font-size: 13px; letter-spacing: .04em; padding: 6px 10px; border-radius: 7px; min-width: 40px; }
+.lang-switch button[aria-pressed="true"] { background: #fff; color: var(--primary); }
+
 </style>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -1021,6 +1027,607 @@ window.QUIZ = [
 
 </script>
 <script>
+// English translations of the map data. Keys match the Russian data files.
+
+// Country names by ISO 3166-1 numeric code (same keys as COUNTRIES)
+window.COUNTRY_EN = {
+  '004':'Afghanistan', '008':'Albania', '012':'Algeria', '020':'Andorra', '024':'Angola', '028':'Antigua and Barbuda',
+  '031':'Azerbaijan', '032':'Argentina', '036':'Australia', '040':'Austria', '044':'The Bahamas', '048':'Bahrain',
+  '050':'Bangladesh', '051':'Armenia', '052':'Barbados', '056':'Belgium', '064':'Bhutan', '068':'Bolivia',
+  '070':'Bosnia and Herzegovina', '072':'Botswana', '076':'Brazil', '084':'Belize', '090':'Solomon Islands', '096':'Brunei',
+  '100':'Bulgaria', '104':'Myanmar', '108':'Burundi', '112':'Belarus', '116':'Cambodia', '120':'Cameroon',
+  '124':'Canada', '132':'Cabo Verde', '140':'Central African Republic', '144':'Sri Lanka', '148':'Chad', '152':'Chile',
+  '156':'China', '158':'Taiwan', '170':'Colombia', '174':'Comoros', '178':'Republic of the Congo', '180':'DR Congo',
+  '188':'Costa Rica', '191':'Croatia', '192':'Cuba', '196':'Cyprus', '203':'Czechia', '204':'Benin',
+  '208':'Denmark', '212':'Dominica', '214':'Dominican Republic', '218':'Ecuador', '222':'El Salvador', '226':'Equatorial Guinea',
+  '231':'Ethiopia', '232':'Eritrea', '233':'Estonia', '242':'Fiji', '246':'Finland', '250':'France',
+  '262':'Djibouti', '266':'Gabon', '268':'Georgia', '270':'The Gambia', '275':'Palestine', '276':'Germany',
+  '288':'Ghana', '296':'Kiribati', '300':'Greece', '308':'Grenada', '320':'Guatemala', '324':'Guinea',
+  '328':'Guyana', '332':'Haiti', '336':'Vatican City', '340':'Honduras', '344':'Hong Kong', '348':'Hungary',
+  '352':'Iceland', '356':'India', '360':'Indonesia', '364':'Iran', '368':'Iraq', '372':'Ireland',
+  '376':'Israel', '380':'Italy', '384':'Côte d’Ivoire', '388':'Jamaica', '392':'Japan', '398':'Kazakhstan',
+  '400':'Jordan', '404':'Kenya', '408':'North Korea', '410':'South Korea', '414':'Kuwait', '417':'Kyrgyzstan',
+  '418':'Laos', '422':'Lebanon', '426':'Lesotho', '428':'Latvia', '430':'Liberia', '434':'Libya',
+  '438':'Liechtenstein', '440':'Lithuania', '442':'Luxembourg', '446':'Macao', '450':'Madagascar', '454':'Malawi',
+  '458':'Malaysia', '462':'Maldives', '466':'Mali', '470':'Malta', '478':'Mauritania', '480':'Mauritius',
+  '484':'Mexico', '492':'Monaco', '496':'Mongolia', '498':'Moldova', '499':'Montenegro', '504':'Morocco',
+  '508':'Mozambique', '512':'Oman', '516':'Namibia', '520':'Nauru', '524':'Nepal', '528':'Netherlands',
+  '548':'Vanuatu', '554':'New Zealand', '558':'Nicaragua', '562':'Niger', '566':'Nigeria', '578':'Norway',
+  '583':'Micronesia', '584':'Marshall Islands', '585':'Palau', '586':'Pakistan', '591':'Panama', '598':'Papua New Guinea',
+  '600':'Paraguay', '604':'Peru', '608':'Philippines', '616':'Poland', '620':'Portugal', '624':'Guinea-Bissau',
+  '626':'Timor-Leste', '634':'Qatar', '642':'Romania', '643':'Russia', '646':'Rwanda', '659':'Saint Kitts and Nevis',
+  '662':'Saint Lucia', '670':'Saint Vincent and the Grenadines', '674':'San Marino', '678':'São Tomé and Príncipe', '682':'Saudi Arabia', '686':'Senegal',
+  '688':'Serbia', '690':'Seychelles', '694':'Sierra Leone', '702':'Singapore', '703':'Slovakia', '704':'Vietnam',
+  '705':'Slovenia', '706':'Somalia', '710':'South Africa', '716':'Zimbabwe', '724':'Spain', '728':'South Sudan',
+  '729':'Sudan', '732':'Western Sahara', '740':'Suriname', '748':'Eswatini', '752':'Sweden', '756':'Switzerland',
+  '760':'Syria', '762':'Tajikistan', '764':'Thailand', '768':'Togo', '776':'Tonga', '780':'Trinidad and Tobago',
+  '784':'United Arab Emirates', '788':'Tunisia', '792':'Turkey', '795':'Turkmenistan', '798':'Tuvalu', '800':'Uganda',
+  '804':'Ukraine', '807':'North Macedonia', '818':'Egypt', '826':'United Kingdom', '834':'Tanzania', '840':'United States',
+  '854':'Burkina Faso', '858':'Uruguay', '860':'Uzbekistan', '862':'Venezuela', '882':'Samoa', '887':'Yemen',
+  '894':'Zambia', 'XK':'Kosovo'
+};
+
+window.CONTINENTS_EN = { EU:'Europe', AS:'Asia', AF:'Africa', NA:'North and Central America', SA:'South America', OC:'Australia and Oceania' };
+
+// International organizations (keys = ORGS[].id)
+window.ORGS_EN = {
+  au: { short:'AU', name:'African Union',
+    info:'Founded in 2002 as the successor to the OAU (1963). Headquarters: Addis Ababa. 55 members, including the Sahrawi Arab Democratic Republic (Western Sahara). Several members have been suspended after military coups.' },
+  asean: { short:'ASEAN', name:'Association of Southeast Asian Nations',
+    info:'Founded in 1967. Secretariat: Jakarta. Timor-Leste became the 11th member in October 2025.' },
+  apec: { short:'APEC', name:'Asia-Pacific Economic Cooperation',
+    info:'Founded in 1989. Secretariat: Singapore. 21 “member economies”: Hong Kong and Taiwan (as “Chinese Taipei”) take part as separate economies.' },
+  brics: { short:'BRICS', name:'Brazil, Russia, India, China, South Africa and others',
+    info:'BRIC formed in 2006; South Africa joined in 2011. Egypt, Ethiopia, Iran and the UAE joined in 2024, Indonesia in January 2025. Saudi Arabia was invited but has not formally completed accession.' },
+  rcep: { short:'RCEP', name:'Regional Comprehensive Economic Partnership',
+    info:'The world’s largest free-trade area. Signed in 2020, in force since 2022. The 10 ASEAN states plus China, Japan, South Korea, Australia and New Zealand.' },
+  eaeu: { short:'EAEU', name:'Eurasian Economic Union',
+    info:'In operation since 1 January 2015. Executive body: the Eurasian Economic Commission (Moscow). 5 members.' },
+  eu: { short:'EU', name:'European Union',
+    info:'Maastricht Treaty, 1992 (built on the EEC, 1957). Institutions in Brussels, Strasbourg and Luxembourg. 27 members; the United Kingdom left in 2020. Latest member: Croatia (2013).' },
+  las: { short:'Arab League', name:'League of Arab States',
+    info:'Founded in 1945. Headquarters: Cairo. 22 members, including Palestine.' },
+  aladi: { short:'ALADI', name:'Latin American Integration Association',
+    info:'Founded in 1980 as the successor to LAFTA (1960). Headquarters: Montevideo. 13 members.' },
+  mercosur: { short:'MERCOSUR', name:'Southern Common Market',
+    info:'Founded in 1991 (Treaty of Asunción). Secretariat: Montevideo. Bolivia has been a full member since 2024. Venezuela has been suspended since 2016.' },
+  nato: { short:'NATO', name:'North Atlantic Treaty Organization',
+    info:'Founded in 1949. Headquarters: Brussels. 32 members; the most recent are Finland (2023) and Sweden (2024).' },
+  oas: { short:'OAS', name:'Organization of American States',
+    info:'Founded in 1948. Headquarters: Washington, D.C. Brings together all 35 independent states of the Americas. Nicaragua left in 2023; Cuba is formally a member but has not taken part since 1962; Venezuela announced its withdrawal in 2017.' },
+  opec: { short:'OPEC', name:'Organization of the Petroleum Exporting Countries',
+    info:'Founded in 1960 (Baghdad). Headquarters: Vienna. 12 members. Angola left in 2024, Qatar in 2019, Ecuador in 2020. Russia takes part in OPEC+ but is not an OPEC member.' },
+  csto: { short:'CSTO', name:'Collective Security Treaty Organization',
+    info:'Treaty signed in 1992, organization since 2002. Secretariat: Moscow. Armenia “froze” its participation in 2024.' },
+  saarc: { short:'SAARC', name:'South Asian Association for Regional Cooperation',
+    info:'Founded in 1985. Secretariat: Kathmandu. 8 members (Afghanistan since 2007).' },
+  cis: { short:'CIS', name:'Commonwealth of Independent States',
+    info:'Founded in 1991. Executive Committee: Minsk. Turkmenistan has been an associate member since 2005. Georgia left in 2009; Ukraine ended its participation in 2018. Moldova is withdrawing from CIS agreements.' },
+  gcc: { short:'GCC', name:'Gulf Cooperation Council',
+    info:'Founded in 1981. Headquarters: Riyadh. The 6 monarchies of the Arabian Peninsula.' },
+  sco: { short:'SCO', name:'Shanghai Cooperation Organisation',
+    info:'Founded in 2001. Secretariat: Beijing. India and Pakistan joined in 2017, Iran in 2023, Belarus in 2024.' },
+  efta: { short:'EFTA', name:'European Free Trade Association',
+    info:'Founded in 1960. Headquarters: Geneva. 4 members.' },
+  usmca: { short:'USMCA', name:'United States–Mexico–Canada Agreement (formerly NAFTA)',
+    info:'In force since 2020, replacing NAFTA (1994).' },
+  g7: { short:'G7', name:'Group of Seven',
+    info:'An informal club of leading developed economies (since 1975–1976). Russia took part as the G8 in 1997–2014.' },
+  g20: { short:'G20', name:'Group of Twenty',
+    info:'19 countries + the European Union + the African Union (since 2023).' },
+  oecd: { short:'OECD', name:'Organisation for Economic Co-operation and Development',
+    info:'Founded in 1961. Headquarters: Paris. 38 members, mostly developed countries.' },
+  guam: { short:'GUAM', name:'Organization for Democracy and Economic Development',
+    info:'Founded in 1997; the name comes from the members’ initials. Secretariat: Kyiv.' },
+  ecowas: { short:'ECOWAS', name:'Economic Community of West African States',
+    info:'Founded in 1975. Headquarters: Abuja. Mali, Burkina Faso and Niger left in January 2025 and formed the Alliance of Sahel States.' },
+  caricom: { short:'CARICOM', name:'Caribbean Community',
+    info:'Founded in 1973. Secretariat: Georgetown (Guyana). 15 members: 14 states plus the British territory of Montserrat.' },
+  can: { short:'Andean Community', name:'Andean Community',
+    info:'Founded in 1969 (Andean Pact). Secretariat: Lima. Chile left in 1976, Venezuela in 2006.' },
+  commonwealth: { short:'Commonwealth', name:'Commonwealth of Nations',
+    info:'56 states, mostly former British territories. Gabon and Togo joined in 2022. In 15 of them the British monarch is head of state.' },
+};
+
+// Regions (keys = REGIONS[].id)
+window.REGIONS_EN = {
+  we:'Western Europe', cee:'Central and Eastern Europe', mena:'Middle East and North Africa', ssa:'Sub-Saharan Africa',
+  ca:'Central Asia', sa:'South Asia', sea:'Southeast Asia', ea:'East Asia', la:'Latin America', oc:'Australia and Oceania',
+};
+
+// Forms of government
+window.GOV_LABELS_EN = { rep:'Republic', const:'Constitutional monarchy', abs:'Absolute monarchy', theo:'Theocratic monarchy' };
+const REALM_EN = 'the British monarch (represented by a governor-general); a Commonwealth realm';
+// Head-of-state notes, keyed by the Russian country name (as in MONARCHIES)
+window.MONARCHY_EN = {
+  'Саудовская Аравия':'a king; an absolute monarchy with a theocratic character (law based on Sharia)',
+  'Оман':'a sultan', 'Бруней':'a sultan', 'Катар':'an emir',
+  'ОАЭ':'a federation of 7 emirates (absolute monarchies); the president is chosen from among the emirs',
+  'Эсватини':'a king',
+  'Ватикан':'the Pope, head of the Roman Catholic Church',
+  'Великобритания':'a king', 'Норвегия':'a king', 'Швеция':'a king', 'Дания':'a king', 'Нидерланды':'a king', 'Бельгия':'a king',
+  'Испания':'a king', 'Люксембург':'a grand duke', 'Лихтенштейн':'a prince', 'Монако':'a prince',
+  'Андорра':'two co-princes: the President of France and the Bishop of Urgell (Spain)',
+  'Япония':'an emperor', 'Таиланд':'a king', 'Камбоджа':'a king',
+  'Малайзия':'a paramount ruler (king) elected for 5 years from among the state sultans',
+  'Бутан':'a king; a constitutional monarchy since 2008', 'Иордания':'a king',
+  'Кувейт':'an emir; parliament was dissolved in 2024', 'Бахрейн':'a king',
+  'Марокко':'a king', 'Лесото':'a king', 'Тонга':'a king',
+  'Канада':REALM_EN, 'Австралия':REALM_EN, 'Новая Зеландия':REALM_EN, 'Папуа — Новая Гвинея':REALM_EN,
+  'Соломоновы Острова':REALM_EN, 'Тувалу':REALM_EN, 'Ямайка':REALM_EN, 'Багамские Острова':REALM_EN, 'Белиз':REALM_EN,
+  'Антигуа и Барбуда':REALM_EN, 'Сент-Китс и Невис':REALM_EN, 'Сент-Люсия':REALM_EN,
+  'Сент-Винсент и Гренадины':REALM_EN, 'Гренада':REALM_EN,
+};
+window.REPUBLIC_NOTES_EN = {
+  'Барбадос':'a republic since 2021 (previously a Commonwealth realm)',
+  'Маврикий':'a republic since 1992',
+  'Тринидад и Тобаго':'a republic since 1976',
+  'Самоа':'a parliamentary republic; the head of state is elected by parliament',
+  'Швейцария':'a federal republic (officially a Confederation)',
+  'США':'a presidential republic', 'Бразилия':'a presidential republic', 'Мексика':'a presidential republic',
+  'Германия':'a parliamentary republic', 'Италия':'a parliamentary republic', 'Индия':'a parliamentary republic',
+  'Франция':'a semi-presidential republic', 'Россия':'a semi-presidential republic',
+  'Иран':'an Islamic (theocratic) republic',
+};
+window.FEDERATIONS_EN = {
+  'Россия':'federal subjects: republics, krais, oblasts, federal cities, autonomous okrugs (89 under the Russian Constitution)',
+  'США':'50 states and the District of Columbia', 'Канада':'10 provinces and 3 territories', 'Мексика':'31 states and the capital',
+  'Бразилия':'26 states and the Federal District', 'Аргентина':'23 provinces and the capital district',
+  'Венесуэла':'23 states and the Capital District', 'Германия':'16 federal states (Länder)', 'Австрия':'9 federal states (Länder)',
+  'Швейцария':'26 cantons', 'Бельгия':'3 regions and 3 language communities',
+  'Босния и Герцеговина':'the Federation of BiH, Republika Srpska and the Brčko District',
+  'Индия':'28 states and 8 union territories', 'Пакистан':'4 provinces and territories', 'Непал':'7 provinces (a federation since 2015)',
+  'Малайзия':'13 states and 3 federal territories', 'Мьянма':'regions and ethnic states',
+  'Ирак':'governorates and the autonomous Kurdistan Region', 'ОАЭ':'7 emirates', 'Австралия':'6 states and territories',
+  'Нигерия':'36 states and the Federal Capital Territory', 'Эфиопия':'regions drawn along ethnic lines', 'Сомали':'federal member states',
+  'Южный Судан':'states', 'Судан':'states', 'Коморы':'3 islands (Union of the Comoros)',
+  'Сент-Китс и Невис':'2 islands: Saint Kitts and Nevis', 'Микронезия':'4 states',
+};
+window.UNITARY_NOTES_EN = {
+  'Франция':'unitary state: regions and departments',
+  'Великобритания':'unitary state with devolved nations (Scotland, Wales, Northern Ireland)',
+  'Испания':'unitary state with autonomous communities', 'Италия':'unitary state: 20 regions',
+  'Китай':'unitary state: provinces, autonomous regions, municipalities and the Hong Kong and Macao SARs',
+  'Япония':'unitary state: 47 prefectures', 'Казахстан':'unitary state: regions and cities of national significance',
+  'Польша':'unitary state: 16 voivodeships', 'Индонезия':'unitary state: provinces',
+};
+
+// Straits, in the same order as STRAITS: [name, connects, separates]
+window.STRAITS_EN = [
+  ['Strait of Gibraltar', 'the Mediterranean Sea and the Atlantic Ocean', 'Europe (Spain) from Africa (Morocco)'],
+  ['Bosporus', 'the Black Sea and the Sea of Marmara', 'the European and Asian parts of Turkey'],
+  ['Dardanelles', 'the Sea of Marmara and the Aegean Sea', 'the Gallipoli Peninsula (Europe) from Asia Minor'],
+  ['Kerch Strait', 'the Sea of Azov and the Black Sea', 'the Kerch (Crimean) and Taman peninsulas'],
+  ['Bab-el-Mandeb', 'the Red Sea and the Gulf of Aden (Indian Ocean)', 'the Arabian Peninsula (Yemen) from Africa (Djibouti)'],
+  ['Strait of Hormuz', 'the Persian Gulf and the Gulf of Oman', 'Iran from the Arabian Peninsula (Oman)'],
+  ['Strait of Malacca', 'the Andaman Sea and the South China Sea (Indian and Pacific oceans)', 'the Malay Peninsula from Sumatra'],
+  ['Singapore Strait', 'the Strait of Malacca and the South China Sea', 'Singapore Island from the Riau Islands (Indonesia)'],
+  ['Sunda Strait', 'the Java Sea and the Indian Ocean', 'the islands of Sumatra and Java'],
+  ['Lombok Strait', 'the Bali Sea and the Indian Ocean', 'the islands of Bali and Lombok'],
+  ['Makassar Strait', 'the Celebes Sea and the Java Sea', 'the islands of Borneo (Kalimantan) and Sulawesi'],
+  ['Torres Strait', 'the Arafura Sea and the Coral Sea', 'New Guinea from Australia (Cape York Peninsula)'],
+  ['Bass Strait', 'the Tasman Sea and the Indian Ocean', 'mainland Australia from Tasmania'],
+  ['Cook Strait', 'the Tasman Sea and the Pacific Ocean', 'the North and South Islands of New Zealand'],
+  ['Korea (Tsushima) Strait', 'the Sea of Japan and the East China Sea', 'the Korean Peninsula from the Japanese islands (Kyushu)'],
+  ['Tsugaru Strait', 'the Sea of Japan and the Pacific Ocean', 'the islands of Honshu and Hokkaido'],
+  ['La Pérouse (Sōya) Strait', 'the Sea of Japan and the Sea of Okhotsk', 'the islands of Sakhalin and Hokkaido'],
+  ['Strait of Tartary', 'the Sea of Japan and the Sea of Okhotsk (via the Amur Liman)', 'Sakhalin Island from mainland Eurasia'],
+  ['Bering Strait', 'the Arctic Ocean (Chukchi Sea) and the Pacific Ocean (Bering Sea)', 'Eurasia (Chukotka) from North America (Alaska)'],
+  ['Taiwan Strait', 'the South China Sea and the East China Sea', 'Taiwan from mainland China'],
+  ['Hainan (Qiongzhou) Strait', 'the South China Sea and the Gulf of Tonkin', 'Hainan Island from the Leizhou Peninsula'],
+  ['Palk Strait', 'the Bay of Bengal and the Gulf of Mannar', 'India (Hindustan) from Sri Lanka'],
+  ['Mozambique Channel', 'parts of the Indian Ocean (the world’s longest strait, ~1,760 km)', 'Africa from Madagascar'],
+  ['Strait of Magellan', 'the Atlantic and Pacific oceans', 'mainland South America from Tierra del Fuego'],
+  ['Drake Passage', 'the Atlantic and Pacific oceans (the world’s widest and deepest strait)', 'South America (Tierra del Fuego) from Antarctica'],
+  ['Straits of Florida', 'the Gulf of Mexico and the Atlantic Ocean', 'the Florida Peninsula from Cuba and the Bahamas'],
+  ['Yucatán Channel', 'the Gulf of Mexico and the Caribbean Sea', 'the Yucatán Peninsula from Cuba'],
+  ['Windward Passage', 'the Atlantic Ocean and the Caribbean Sea', 'the islands of Cuba and Hispaniola (Haiti)'],
+  ['Davis Strait', 'Baffin Bay and the Labrador Sea', 'Greenland from Baffin Island'],
+  ['Hudson Strait', 'Hudson Bay and the Labrador Sea', 'Baffin Island from the Labrador Peninsula'],
+  ['Denmark Strait', 'the Greenland Sea and the Atlantic Ocean (Irminger Sea)', 'Greenland from Iceland'],
+  ['Cabot Strait', 'the Gulf of Saint Lawrence and the Atlantic Ocean', 'Newfoundland from Cape Breton Island'],
+  ['English Channel', 'the Atlantic Ocean and (via the Strait of Dover) the North Sea', 'Great Britain from France'],
+  ['Strait of Dover', 'the English Channel and the North Sea', 'Great Britain from France (32 km at its narrowest)'],
+  ['North Channel', 'the Irish Sea and the Atlantic Ocean', 'Ireland (Northern Ireland) from Scotland'],
+  ['St George’s Channel', 'the Irish Sea and the Celtic Sea', 'Ireland from Wales (UK)'],
+  ['Skagerrak', 'the North Sea and the Kattegat', 'Norway from Denmark (Jutland Peninsula)'],
+  ['Kattegat', 'the Skagerrak and the Baltic Sea (via the Danish straits)', 'Sweden from Denmark (Jutland Peninsula)'],
+  ['Øresund (The Sound)', 'the Kattegat and the Baltic Sea', 'Sweden from the island of Zealand (Denmark)'],
+  ['Strait of Otranto', 'the Adriatic and Ionian seas', 'Italy from Albania'],
+  ['Strait of Messina', 'the Tyrrhenian and Ionian seas', 'Sicily from the Italian (Apennine) Peninsula'],
+  ['Strait of Bonifacio', 'the Tyrrhenian Sea and the Mediterranean (Sardinian) Sea', 'the islands of Corsica and Sardinia'],
+  ['Strait of Sicily (Tunisian Strait)', 'the western and eastern Mediterranean', 'Sicily from Africa (Tunisia)'],
+  ['Kara Gates', 'the Barents and Kara seas', 'Novaya Zemlya from Vaygach Island'],
+  ['Vilkitsky Strait', 'the Kara Sea and the Laptev Sea', 'the Taymyr Peninsula from the Severnaya Zemlya archipelago'],
+];
+
+window.TOPICS_EN = {
+  1:'The political map: its stages and changes after World War II',
+  2:'State territory, borders, territorial waters, EEZ, continental shelf',
+  3:'Forms of government and territorial organization. International organizations',
+  4:'Natural conditions and resources; resource endowment',
+  5:'Mineral resources; major oil, gas and coal basins',
+  6:'Land and water resources',
+  7:'Biological, agroclimatic and recreational resources',
+  8:'Population size and reproduction; demographic policy',
+  9:'Age, ethnic and religious composition of the population',
+  10:'Settlement, population density, urbanization',
+  11:'The world economy, the international division of labour, industry location under the scientific-technological revolution',
+  12:'Economic structure of developed and developing countries',
+  13:'Western Europe',
+  14:'The economies of Germany and France',
+  15:'Central and Eastern Europe. Poland',
+  16:'The Middle East and North Africa. Turkey',
+  17:'Sub-Saharan Africa',
+  18:'Central Asia. Kazakhstan',
+  19:'South Asia. India',
+  20:'Southeast Asia. Indonesia',
+  21:'East Asia. Japan',
+  22:'The economy of China',
+  23:'Geography of the USA',
+  24:'Latin America. Brazil',
+  25:'Australia and Oceania',
+};
+
+</script>
+<script>
+// English version of the quiz, in exactly the same order as QUIZ in data-quiz.js.
+// Each entry: [topic, question, correct answer, [3 wrong answers], explanation]
+window.QUIZ_EN = [
+// ——— 1 ———
+[1,'How many states are members of the United Nations?','193',['185','195','201'],'193 member states; the Holy See (Vatican) and Palestine have observer status.'],
+[1,'Which states have observer status at the UN?','The Vatican and Palestine',['Switzerland and the Vatican','Taiwan and Kosovo','Palestine and Western Sahara'],'Switzerland joined the UN in 2002; Taiwan and Kosovo are neither members nor observers.'],
+[1,'Which period in the formation of the political map began after World War I?','The Contemporary period',['The Modern period','The Medieval period','The Ancient period'],'Periods: Ancient (to the 5th c.), Medieval (5th–15th c.), Modern (15th–16th c. to the end of WWI), Contemporary (after WWI).'],
+[1,'Which period does the Age of Discovery belong to?','The Modern period',['The Medieval period','The Contemporary period','The Ancient period'],'The Modern period begins at the turn of the 15th–16th centuries with the great geographical discoveries and colonial conquests.'],
+[1,'What was the largest change to the political map after World War II?','The collapse of the colonial system',['The breakup of the USSR','German reunification','The creation of the EU'],'Decolonization produced more than 100 new independent states in Asia, Africa, Latin America and Oceania.'],
+[1,'Which year is known as the “Year of Africa” (17 countries became independent)?','1960',['1945','1957','1975'],'In 1960, 17 African colonies became independent.'],
+[1,'In which year were West and East Germany reunified?','1990',['1989','1991','1993'],'The Berlin Wall fell in 1989; Germany reunified on 3 October 1990.'],
+[1,'Which is the newest UN member state?','South Sudan',['Timor-Leste','Montenegro','Eritrea'],'South Sudan separated from Sudan and joined the UN in 2011.'],
+[1,'Which state emerged peacefully in 1993 from the “Velvet Divorce”?','Slovakia (and Czechia)',['Eritrea','Croatia','Montenegro'],'Czechoslovakia peacefully split into Czechia and Slovakia on 1 January 1993.'],
+[1,'From which state did Eritrea separate in 1993?','Ethiopia',['Sudan','Somalia','Djibouti'],'Eritrea became independent from Ethiopia after a 1993 referendum.'],
+[1,'Which of these is a qualitative change to the political map?','A change in the form of government (e.g. monarchy → republic)',['The reunification of West and East Germany','The breakup of the USSR','The annexation of territory after a war'],'Quantitative changes alter territory or the number of states; qualitative changes alter the historical formation, form of government, or sovereignty.'],
+[1,'Which state became a republic in 2021, removing the British monarch as head of state?','Barbados',['Jamaica','Australia','Mauritius'],'Barbados has been a republic since 30 November 2021 and remains in the Commonwealth.'],
+[1,'In which year was Hong Kong handed over to China?','1997',['1984','1999','2001'],'The UK returned Hong Kong to China in 1997; Portugal returned Macao in 1999.'],
+[1,'Which state became independent from Indonesia in 2002?','Timor-Leste',['Brunei','Papua New Guinea','Singapore'],'Timor-Leste (East Timor), a former Portuguese colony, was occupied by Indonesia from 1975 to 1999.'],
+// ——— 2 ———
+[2,'How wide are territorial waters under the 1982 UN Convention on the Law of the Sea?','12 nautical miles',['3 nautical miles','24 nautical miles','200 nautical miles'],'The territorial sea extends up to 12 miles from the baselines; the state has full sovereignty over it.'],
+[2,'How wide is the exclusive economic zone (EEZ)?','200 nautical miles',['12 nautical miles','24 nautical miles','350 nautical miles'],'In the EEZ the state has sovereign rights to explore and exploit resources, but navigation is free.'],
+[2,'How wide is the contiguous zone (from the baselines)?','24 nautical miles',['12 nautical miles','50 nautical miles','200 nautical miles'],'In the contiguous zone the state exercises customs, sanitary and immigration control.'],
+[2,'How long is one nautical mile?','1,852 m',['1,609 m','1,000 m','2,000 m'],'A nautical mile is about one minute of arc along a meridian. 1,609 m is the statute (land) mile.'],
+[2,'What is the maximum distance a state’s continental shelf can extend (if confirmed by the UN Commission)?','350 nautical miles',['200 nautical miles','24 nautical miles','500 nautical miles'],'The shelf is at least 200 miles; where the continent extends geologically, up to 350 miles or 100 miles beyond the 2,500 m isobath.'],
+[2,'The US–Canada border along the 49th parallel is an example of which type of border?','Geometric (astronomical)',['Orographic','Hydrographic','Ethnographic'],'Geometric borders follow straight lines, parallels and meridians; they are typical of Africa and North America.'],
+[2,'A border that runs along a mountain ridge is called…','Orographic',['Hydrographic','Geometric','Maritime'],'Orographic borders follow relief (the Pyrenees, the Andes); hydrographic borders follow rivers and lakes.'],
+[2,'What is border delimitation?','Defining the border by treaty and drawing it on a map',['Marking the border on the ground with border posts','Inspecting and restoring border markers','Unilaterally giving up part of a territory'],'Delimitation happens on the map, demarcation on the ground.'],
+[2,'Which state is an enclave entirely surrounded by South Africa?','Lesotho',['Eswatini','Botswana','Namibia'],'Enclaves: Lesotho (in South Africa), San Marino and the Vatican (in Italy).'],
+[2,'Relative to the rest of Russia, the Kaliningrad Oblast is…','An exclave',['An enclave','A condominium','A protectorate'],'An exclave is part of a state separated from its main territory by other states.'],
+[2,'Which state is the largest by area after Russia?','Canada',['China','United States','Brazil'],'The seven largest by area: Russia, Canada, China/USA, Brazil, Australia, India.'],
+[2,'Which country is NOT among the seven largest by area?','Argentina',['Australia','India','Brazil'],'Argentina is 8th by area; India is 7th.'],
+[2,'Which international treaty “froze” territorial claims to Antarctica?','The Antarctic Treaty of 1959',['The UN Convention on the Law of the Sea (1982)','The Treaty of Versailles (1919)','The Helsinki Final Act (1975)'],'Antarctica may be used for peaceful purposes only; national claims are frozen.'],
+[2,'Which is the smallest state in the world by area?','Vatican City',['Monaco','Nauru','San Marino'],'The Vatican covers about 0.44 km²; Monaco about 2 km².'],
+// ——— 3 ———
+[3,'Roughly how many monarchies are there in the world today?','About 40 (43)',['About 10','About 25','About 70'],'43 monarchies, 15 of which are Commonwealth realms headed by the British monarch.'],
+[3,'Which state is an absolute monarchy?','Oman',['United Kingdom','Spain','Japan'],'Absolute monarchies: Saudi Arabia, Oman, Qatar, the UAE, Brunei, Eswatini.'],
+[3,'Which state is a theocratic monarchy?','Vatican City',['Iran','Nepal','Bhutan'],'The head of the Vatican is the Pope. Iran is an Islamic republic; Nepal has been a republic since 2008.'],
+[3,'Which of these states is a republic?','France',['Netherlands','Belgium','Sweden'],'The Netherlands, Belgium and Sweden are constitutional monarchies.'],
+[3,'In which country is the British monarch head of state?','Canada',['India','South Africa','Ireland'],'Commonwealth realms: Canada, Australia, New Zealand, Jamaica, the Bahamas and others (15 including the UK).'],
+[3,'Which republic is parliamentary?','Germany',['United States','Brazil','Mexico'],'In a parliamentary republic the government is formed by parliament; the president has mostly ceremonial functions.'],
+[3,'Which republic is presidential?','United States',['Germany','Italy','India'],'In a presidential republic the president is both head of state and head of government.'],
+[3,'Which state is a federation?','Brazil',['France','Poland','Japan'],'Federations include Russia, the USA, Canada, Mexico, Brazil, Germany, India, Australia, Nigeria and others (about 25).'],
+[3,'What are the constituent units of the German federation called?','Länder (federal states)',['States','Cantons','Provinces'],'Länder — Germany and Austria; cantons — Switzerland; provinces — Canada, Argentina; states — USA, India, Brazil.'],
+[3,'What are the constituent units of Switzerland called?','Cantons',['Länder','Departments','Voivodeships'],'Switzerland consists of 26 cantons.'],
+[3,'Where is OPEC headquartered?','Vienna',['Riyadh','Baghdad','Geneva'],'OPEC was founded in Baghdad in 1960; its headquarters has been in Vienna since 1965.'],
+[3,'Where is NATO headquartered?','Brussels',['Washington, D.C.','London','Geneva'],'NATO headquarters is in Brussels, Belgium.'],
+[3,'Where is the African Union headquartered?','Addis Ababa',['Cairo','Nairobi','Abuja'],'Addis Ababa, Ethiopia.'],
+[3,'Where is the Arab League headquartered?','Cairo',['Riyadh','Damascus','Baghdad'],'The Arab League was founded in 1945; its headquarters is in Cairo.'],
+[3,'Where is the ASEAN Secretariat?','Jakarta',['Singapore','Bangkok','Manila'],'ASEAN was founded in 1967; its secretariat is in Jakarta.'],
+[3,'Which of these organizations is a military-political alliance?','CSTO',['OPEC','ASEAN','MERCOSUR'],'Military-political blocs: NATO, CSTO. OPEC is sectoral; ASEAN and MERCOSUR are regional economic groupings.'],
+[3,'Which organization is sectoral (industry-based)?','OPEC',['EU','CIS','UN'],'OPEC unites oil-exporting countries.'],
+[3,'Which country belongs to both the EU and NATO?','Poland',['Switzerland','Norway','Austria'],'Norway is in NATO but not the EU; Austria is in the EU but not NATO; Switzerland is in neither.'],
+[3,'Which country joined NATO in 2024?','Sweden',['Finland','Austria','Ireland'],'Finland joined in 2023, Sweden in March 2024.'],
+[3,'Which country joined BRICS in January 2025?','Indonesia',['Turkey','Argentina','Saudi Arabia'],'Argentina declined to join; Indonesia became the 10th member.'],
+[3,'Which country became a full SCO member in 2024?','Belarus',['Iran','Turkey','Mongolia'],'Iran joined the SCO in 2023, Belarus in 2024.'],
+[3,'Which of these countries is an OPEC member?','Venezuela',['Russia','Mexico','Norway'],'Russia and Mexico take part in OPEC+ but are not OPEC members.'],
+[3,'Which country left OPEC in 2024?','Angola',['Nigeria','Gabon','Algeria'],'Angola left OPEC on 1 January 2024.'],
+[3,'Which country is NOT a member of the Gulf Cooperation Council?','Iran',['Qatar','Oman','Bahrain'],'GCC: Saudi Arabia, the UAE, Kuwait, Qatar, Bahrain, Oman.'],
+[3,'Which country is NOT a member of the EAEU?','Tajikistan',['Armenia','Kyrgyzstan','Kazakhstan'],'EAEU: Russia, Belarus, Kazakhstan, Armenia, Kyrgyzstan.'],
+[3,'Which country became ASEAN’s 11th member in 2025?','Timor-Leste',['Papua New Guinea','Sri Lanka','Bangladesh'],'Timor-Leste was admitted to ASEAN in October 2025.'],
+[3,'Which country became a full MERCOSUR member in 2024?','Bolivia',['Chile','Venezuela','Peru'],'MERCOSUR members: Argentina, Brazil, Paraguay, Uruguay, Bolivia; Venezuela is suspended.'],
+[3,'Where is the CIS Executive Committee located?','Minsk',['Moscow','Astana','Bishkek'],'The CIS Executive Committee is in Minsk.'],
+// ——— 4 ———
+[4,'What is resource endowment (resource availability)?','The ratio between the amount of natural resources and the rate at which they are used',['The total volume of resource reserves in a country','A country’s share of world output','The value of raw-material exports'],'It is expressed as the number of years a resource will last, or as reserves per capita.'],
+[4,'Natural conditions are…','Natural bodies and forces that matter for human life but are not directly used in production',['All natural components used as raw materials','Mineral deposits only','Resources created by people'],'For example, climate and relief. Natural resources, by contrast, are used directly in production.'],
+[4,'Which of these are exhaustible but renewable resources?','Forest resources',['Oil','Coal','Solar energy'],'Renewable: biological, land, water. Non-renewable: mineral. Inexhaustible: solar, wind and geothermal energy.'],
+[4,'Which resources are exhaustible and non-renewable?','Mineral resources',['Forest resources','Wind energy','Fish stocks'],'Mineral deposits are not restored on a historical time scale.'],
+[4,'Which resource is inexhaustible?','Wind energy',['Natural gas','Soils','Fresh water in lakes'],'Inexhaustible: the energy of the Sun, wind, tides and the Earth’s internal heat.'],
+[4,'Which mineral fuel has the largest resource endowment in the world?','Coal',['Oil','Natural gas','Uranium ore'],'Coal will last more than 100 years; oil and gas about 50 years at current output.'],
+[4,'Roughly how many years will proven oil reserves last at current output?','About 50 years',['About 10 years','About 150 years','About 500 years'],'World oil resource endowment is roughly 50 years.'],
+[4,'What is the classification of resources into exhaustible and inexhaustible called?','Ecological (by exhaustibility)',['Natural (by origin)','Economic (by use)','Territorial'],'The natural classification gives mineral, land, water, etc.; the economic one gives resources for industry, agriculture, and so on.'],
+// ——— 5 ———
+[5,'Which country has the largest proven oil reserves?','Venezuela',['Saudi Arabia','Russia','United States'],'Venezuela (the Orinoco Belt) holds about 17% of world reserves, followed by Saudi Arabia, Iran and Canada.'],
+[5,'Which country has the largest natural gas reserves?','Russia',['Qatar','Iran','United States'],'Leaders in gas reserves: Russia, Iran, Qatar.'],
+[5,'Which country is the world’s largest oil producer?','United States',['Saudi Arabia','Russia','China'],'Since 2018 the USA has led oil production thanks to shale output.'],
+[5,'Which country mines the most coal?','China',['United States','India','Australia'],'China accounts for more than half of world coal output.'],
+[5,'Which is the world’s largest oil and gas basin?','The Persian Gulf basin',['The West Siberian basin','The Gulf of Mexico basin','The North Sea basin'],'The Persian Gulf basin holds about half of the world’s oil reserves.'],
+[5,'In which country is the Ruhr coal basin?','Germany',['France','Poland','Belgium'],'The Ruhr is Germany’s largest coal basin and an old industrial region.'],
+[5,'The Upper Silesian coal basin lies mainly in…','Poland',['Germany','Hungary','Romania'],'Upper Silesia is Poland’s main coal region (partly in Czechia).'],
+[5,'The Appalachian coal basin is in…','the United States',['Canada','Australia','the United Kingdom'],'The Appalachian basin is the largest coal basin in the USA.'],
+[5,'The Maracaibo oil and gas basin is in…','Venezuela',['Mexico','Colombia','Brazil'],'Lake Maracaibo is Venezuela’s oldest oil region.'],
+[5,'Which countries produce oil and gas in the North Sea?','Norway and the United Kingdom',['Germany and France','Sweden and Finland','Denmark and Poland'],'The North Sea basin is divided mainly between Norway and the UK.'],
+[5,'Africa’s “Copperbelt” lies in…','Zambia and DR Congo',['South Africa and Namibia','Ghana and Nigeria','Kenya and Tanzania'],'The Copperbelt is a copper and cobalt mining zone on the Zambia–DR Congo border.'],
+[5,'Which country has the largest copper reserves and output?','Chile',['Peru','United States','China'],'Chile (Chuquicamata, Escondida mines) is the world leader in copper.'],
+[5,'Which country has the largest bauxite reserves?','Guinea',['Australia','Jamaica','Brazil'],'Guinea has the largest reserves; Australia and Guinea lead production.'],
+[5,'Which country leads the world in iron ore mining?','Australia',['Brazil','China','India'],'Australia (the Pilbara region) is first, Brazil second.'],
+[5,'Which country is the world leader in uranium mining?','Kazakhstan',['Canada','Australia','Niger'],'Kazakhstan supplies about 40% of the world’s uranium.'],
+[5,'Which countries form the “lithium triangle”?','Chile, Argentina, Bolivia',['Australia, China, Chile','Peru, Ecuador, Colombia','Brazil, Paraguay, Uruguay'],'Most of the world’s lithium reserves are in the salt flats of the Andes.'],
+[5,'Which country is the largest producer of platinum-group metals?','South Africa',['Russia','Canada','Zimbabwe'],'South Africa (Bushveld Complex) produces about 70% of the world’s platinum.'],
+[5,'The West Siberian basin is mainly…','An oil and gas basin in Russia',['A coal basin in Russia','An iron ore basin in Kazakhstan','An oil and gas basin in Canada'],'Western Siberia is Russia’s main oil and gas producing region.'],
+// ——— 6 ———
+[6,'Roughly what share of the world’s land is arable?','About 11%',['About 3%','About 30%','About 50%'],'Structure: arable land ~11%, meadows and pastures ~25%, forests ~30%, the rest low-productive and built-up land.'],
+[6,'Which country has the largest freshwater (river runoff) resources?','Brazil',['Russia','Canada','United States'],'Brazil (the Amazon) is first, Russia second.'],
+[6,'Which sector is the world’s largest consumer of fresh water?','Agriculture (irrigation)',['Industry','Municipal use','Energy'],'Agriculture accounts for about 70% of water withdrawals.'],
+[6,'Which region of the world is least supplied with water?','Southwest Asia and North Africa',['Southeast Asia','Western Europe','South America'],'Countries of the Arabian Peninsula and North Africa rely heavily on seawater desalination.'],
+[6,'Which country leads the world in seawater desalination?','Saudi Arabia',['Egypt','Israel','India'],'Saudi Arabia and the UAE are the largest producers of desalinated water.'],
+[6,'Which river carries the most water in the world?','The Amazon',['The Congo','The Yangtze','The Mississippi'],'The Amazon carries about 15–20% of the world’s river discharge.'],
+[6,'Which country has the greatest hydropower potential and output?','China',['Brazil','Canada','Norway'],'China leads in hydropower generation (the Three Gorges Dam on the Yangtze).'],
+[6,'Desertification is most severe in…','the Sahel (Africa)',['Amazonia','Scandinavia','Siberia'],'The Sahel is the belt south of the Sahara suffering from overgrazing and droughts.'],
+// ——— 7 ———
+[7,'Which country has the largest forest area?','Russia',['Brazil','Canada','United States'],'Russia has about 20% of the world’s forests, followed by Brazil, Canada, the USA and China.'],
+[7,'The northern forest belt consists mainly of…','Coniferous forests',['Tropical rainforests','Savannas','Broadleaf evergreen forests'],'The northern belt is coniferous (Russia, Canada, Scandinavia); the southern belt is tropical rainforest (Amazonia, the Congo basin, Southeast Asia).'],
+[7,'Which area is called the “lungs of the planet”?','Amazonia',['The Siberian taiga','The Sahara','The Great Plains'],'The Amazon rainforest is the largest tropical rainforest on Earth.'],
+[7,'Agroclimatic resources are…','Heat, moisture and light needed by crops',['Soil fertility','Groundwater reserves','Pasture area'],'Heat supply is measured by the sum of active temperatures (above +10 °C).'],
+[7,'Which indicator is used to assess the heat available to crops?','The sum of active temperatures',['Mean annual temperature','Temperature range','The moisture coefficient'],'The sum of mean daily temperatures above +10 °C over the growing season.'],
+[7,'Which is the most visited country in the world?','France',['United States','Spain','Italy'],'France receives about 100 million foreign tourists a year.'],
+[7,'Which country earns the most from international tourism?','United States',['France','Spain','China'],'The USA leads in receipts, France in arrivals.'],
+[7,'Which ocean provides the largest catch of fish and seafood?','The Pacific',['The Atlantic','The Indian','The Arctic'],'The Pacific accounts for more than half of the world catch.'],
+[7,'Which country leads the world in fish catch and aquaculture?','China',['Japan','Norway','Peru'],'China is the largest fish producer, especially in aquaculture.'],
+// ——— 8 ———
+[8,'When did the world population reach 8 billion (UN estimate)?','November 2022',['2011','2019','2025'],'7 billion in 2011, 8 billion on 15 November 2022.'],
+[8,'Which is the most populous country in the world?','India',['China','United States','Indonesia'],'India overtook China in 2023; the USA is third.'],
+[8,'Which type of population reproduction is associated with the “population explosion”?','Type II (traditional) — developing countries',['Type I (modern) — developed countries','The archaic type','The type transitioning to depopulation'],'Type II: high birth rates with rapidly falling death rates → high natural increase.'],
+[8,'At what stage of the demographic transition does the “population explosion” occur?','When death rates fall sharply while birth rates stay high',['When birth and death rates are both high','When birth and death rates are both low','When birth rates are below death rates'],'Demographic transition: 1) high births and deaths; 2) deaths fall, births stay high — the explosion; 3) births fall; 4) low births and deaths.'],
+[8,'Which country has the highest total fertility rate?','Niger',['India','Egypt','Bangladesh'],'Niger has about 6 children per woman.'],
+[8,'Which country has the lowest total fertility rate?','South Korea',['Nigeria','India','United States'],'South Korea has fewer than 1 child per woman (about 0.7–0.75).'],
+[8,'What demographic policy did China pursue from 1979 to 2015?','“One family, one child”',['Encouraging higher birth rates','“Two children is the norm”','No demographic policy at all'],'Two children allowed from 2016, three from 2021.'],
+[8,'Which country was the first in the world (in 1952) to adopt a national family-planning programme?','India',['China','Japan','Egypt'],'India began a policy of lowering birth rates as early as 1952.'],
+[8,'Natural increase of population is…','The difference between the birth rate and the death rate',['The difference between immigration and emigration','The total number of births in a year','Growth due to migration'],'It is measured per mille (‰), i.e. per 1,000 inhabitants.'],
+[8,'Which part of the world has the highest rate of natural increase?','Africa',['Asia','Latin America','Europe'],'Africa: about 2.3–2.5% a year.'],
+[8,'Depopulation is…','Natural population decline, when deaths exceed births',['Movement from the countryside to cities','Growth in the share of older people','Mass emigration'],'Depopulation is typical of several European countries, Japan and South Korea.'],
+[8,'A demographic policy aimed at raising the birth rate is pursued in…','France and Russia',['India and Bangladesh','China (1979–2015)','Nigeria and Niger'],'Maternity capital in Russia, family allowances in France.'],
+// ——— 9 ———
+[9,'Which language family is the largest in the world?','Indo-European',['Sino-Tibetan','Afroasiatic','Altaic'],'Almost half of humanity speaks Indo-European languages.'],
+[9,'Which is the largest people (ethnic group) in the world?','The Chinese (Han)',['Hindustanis','Bengalis','Arabs'],'There are more than 1.2 billion Han Chinese.'],
+[9,'Which world religion has the most followers?','Christianity',['Islam','Buddhism','Hinduism'],'About 2.4 billion Christians and about 2 billion Muslims.'],
+[9,'Which country has the largest Muslim population?','Indonesia',['Saudi Arabia','Pakistan','Iran'],'Indonesia has more than 230 million Muslims.'],
+[9,'Buddhism is the main religion in…','Thailand',['India','Indonesia','the Philippines'],'Buddhist countries: Thailand, Myanmar, Sri Lanka, Cambodia, Laos, Bhutan, Mongolia.'],
+[9,'Which national religion is practised in Japan?','Shinto',['Confucianism','Hinduism','Taoism'],'The Japanese follow Shinto and Buddhism.'],
+[9,'In which country are most Muslims Shia?','Iran',['Saudi Arabia','Turkey','Egypt'],'Shias predominate in Iran, Iraq, Azerbaijan and Bahrain.'],
+[9,'Which is the world’s largest Catholic country?','Brazil',['Italy','Mexico','the Philippines'],'Brazil has the most Catholics.'],
+[9,'Which state is almost entirely mono-ethnic?','Japan',['India','Russia','Switzerland'],'Mono-ethnic states: Japan, Iceland, Poland, South Korea and others.'],
+[9,'Which state is bi-national?','Belgium',['Germany','Poland','Portugal'],'Belgium — Flemings and Walloons; Canada — English and French Canadians.'],
+[9,'Which region of the world has the highest share of children in its age structure?','Tropical Africa',['Western Europe','North America','East Asia'],'In African countries, children under 15 make up more than 40% of the population.'],
+[9,'Which country has the highest share of older people (65+)?','Japan',['India','Nigeria','Brazil'],'People aged 65+ make up almost 30% of Japan’s population.'],
+[9,'What does the age–sex pyramid of a developing country look like?','A wide base and a narrow top',['A narrow base and a wide top','A rectangle','An “urn” shape'],'A wide base means many children; the “urn” shape is typical of ageing developed countries.'],
+[9,'Hinduism is the main religion in…','India and Nepal',['Pakistan and Bangladesh','Sri Lanka and Myanmar','Iran and Afghanistan'],'Pakistan and Bangladesh are Muslim countries; Sri Lanka and Myanmar are Buddhist.'],
+// ——— 10 ———
+[10,'Which large country has the highest population density?','Bangladesh',['India','China','Japan'],'Bangladesh has more than 1,100 people per km². Among all states, Monaco is densest.'],
+[10,'What is the average population density of the Earth’s land?','About 60 people/km²',['About 10 people/km²','About 150 people/km²','About 300 people/km²'],'8 billion people on ~134 million km² of land (excluding Antarctica).'],
+[10,'Which state has the lowest population density?','Mongolia',['Kazakhstan','Russia','Canada'],'Mongolia: about 2 people per km².'],
+[10,'What share of the world’s population lives in cities?','About 57–58%',['About 30%','About 75%','About 90%'],'Since 2007–2008 there have been more city dwellers than rural residents.'],
+[10,'Which part of the world is least urbanized?','Africa',['Europe','Latin America','North America'],'Africa’s urbanization level is about 45%.'],
+[10,'What is “false urbanization”?','City growth driven by rural migrants without industrial or infrastructure development',['Growth of suburbs','The spread of urban lifestyles to the countryside','A decline in the number of cities'],'Typical of developing countries: growing slums and unemployment.'],
+[10,'Suburbanization is…','The growth of suburban areas around large cities',['A rise in the share of rural population','Out-migration to the countryside','The merging of cities into a megalopolis'],'Rurbanization is the spread of urban lifestyles to rural areas.'],
+[10,'Which megalopolis stretches from Boston to Washington?','BosWash',['ChiPitts','SanSan','Tokaido'],'ChiPitts — Chicago–Pittsburgh; SanSan — San Francisco–San Diego; Tokaido — Tokyo–Osaka.'],
+[10,'The Tokaido megalopolis is in…','Japan',['China','South Korea','India'],'Tokaido runs from Tokyo to Osaka/Kobe along the Pacific coast of Honshu.'],
+[10,'An agglomeration is…','A compact cluster of towns around a large core city, linked by close ties',['Any city with more than 1 million people','A merger of several countries','A workers’ settlement next to a factory'],'Merging agglomerations form a megalopolis.'],
+// ——— 11 ———
+[11,'What are the main stages in the development of the world economy?','Pre-industrial, industrial, post-industrial',['Agrarian, maritime, space','Colonial, socialist, market','Early, middle, late'],'In the post-industrial stage, services and knowledge play the leading role.'],
+[11,'The post-industrial stage is characterized by the predominance in GDP of…','Services',['Agriculture','Extractive industries','Manufacturing'],'In developed countries services account for 70–80% of GDP.'],
+[11,'The international geographical division of labour is…','Countries specializing in producing certain goods and services and exchanging them',['Carving up markets among multinationals','Labour migration','Dividing the world into developed and developing countries'],'Industries of international specialization produce mainly for export.'],
+[11,'Which location factor becomes more important under the scientific-technological revolution?','Knowledge intensity and a skilled workforce',['Raw materials','Proximity to fuel resources','Cheap unskilled labour'],'The scientific-technological revolution reduces the role of raw-material and fuel factors.'],
+[11,'What is the “Green Revolution”?','The transformation of agriculture in developing countries through new crop varieties, irrigation and chemicals',['The switch to organic farming in Europe','Reforestation in the tropics','The growth of renewable energy'],'It covered India, Pakistan, Mexico and the Philippines in the 1960s–70s.'],
+[11,'Which country produces more than half of the world’s steel?','China',['India','Japan','United States'],'China: more than 50% of world steel output.'],
+[11,'Which country is the largest car producer?','China',['Japan','United States','Germany'],'China makes about a third of the world’s cars and leads in electric vehicles.'],
+[11,'Which country has the highest share of nuclear power in its electricity generation?','France',['United States','Japan','Germany'],'Nuclear plants supply about 65–70% of France’s electricity.'],
+[11,'Which country is the largest wheat exporter?','Russia',['United States','Canada','Australia'],'Russia has been the top wheat exporter since the late 2010s.'],
+[11,'Which country is the largest rice exporter?','India',['China','Thailand','Vietnam'],'China is the largest producer, India the largest exporter, followed by Thailand and Vietnam.'],
+[11,'Which country is the world leader in coffee production?','Brazil',['Colombia','Ethiopia','Vietnam'],'Brazil grows about a third of the world’s coffee; Vietnam is second.'],
+[11,'Which country is the largest producer of cocoa beans?','Côte d’Ivoire',['Ghana','Brazil','Nigeria'],'Côte d’Ivoire produces about 40% of the world’s cocoa.'],
+[11,'Which country is the largest producer of natural rubber?','Thailand',['Brazil','Malaysia','Nigeria'],'Leaders: Thailand, Indonesia, Vietnam.'],
+[11,'Which country is the largest producer of palm oil?','Indonesia',['Malaysia','Nigeria','Thailand'],'Indonesia and Malaysia produce more than 80% of palm oil.'],
+[11,'Which country is the largest producer of soybeans?','Brazil',['United States','Argentina','China'],'Brazil has overtaken the USA in soybean production.'],
+[11,'Which country is the largest producer of tea?','China',['India','Sri Lanka','Kenya'],'China is first, India second; the largest exporters are Kenya, China and Sri Lanka.'],
+// ——— 12 ———
+[12,'Roughly what share of GDP do services account for in developed countries?','70–80%',['20–30%','40–50%','90–95%'],'Developed countries have a post-industrial economic structure.'],
+[12,'Which countries are “first-wave” newly industrialized countries (NICs)?','South Korea, Taiwan, Singapore, Hong Kong',['Malaysia, Thailand, Indonesia, the Philippines','Brazil, Mexico, Argentina','China, India, Vietnam'],'They are known as the “Asian Tigers” (or “Dragons”).'],
+[12,'Which countries are “second-wave” NICs?','Malaysia, Thailand, Indonesia',['Singapore, Hong Kong, Taiwan','Japan, Australia, New Zealand','Nigeria, Kenya, Egypt'],'The second wave of industrialization in Southeast Asia came in the 1980s–90s.'],
+[12,'Which countries are called the “key countries” of the developing world?','Brazil, Mexico, India',['Chad, Niger, Mali','Singapore, Bahrain, Qatar','Haiti, Nepal, Laos'],'They have large economic potential and a leading role among developing countries.'],
+[12,'Where are most of the least developed countries concentrated?','In Tropical Africa',['In Latin America','In Southern Europe','In East Asia'],'Of the ~44 LDCs, more than 30 are in Africa.'],
+[12,'A monoculture economy is…','Narrow specialization in one or two products, usually for export',['Growing crops without fertilizer','Combining crop farming and livestock','Subsistence farming'],'Typical of many developing countries (coffee, cocoa, copper, etc.).'],
+[12,'Which country is NOT in the G7?','Spain',['Italy','Canada','Japan'],'G7: USA, Japan, Germany, UK, France, Italy, Canada.'],
+[12,'What is typical of the territorial structure of developing economies?','A “focal” pattern: activity concentrated in the capital or a port',['An even spread of production','A predominance of highly developed regions','Many technopolises'],'This is a legacy of the colonial era.'],
+[12,'What are declining old industrial regions called?','Depressed regions',['Frontier (new development) regions','Technopolises','Free economic zones'],'For example, coal and steel regions (Lorraine, the Ruhr before restructuring).'],
+[12,'Which is the world’s largest economy by nominal GDP?','United States',['China','Japan','Germany'],'By GDP at purchasing power parity, China leads.'],
+// ——— 13 ———
+[13,'Which Western European country has the largest population?','Germany',['France','United Kingdom','Italy'],'Germany has about 83–84 million people.'],
+[13,'Which Western European country is the largest by area?','France',['Spain','Germany','Sweden'],'France covers about 550,000 km² (excluding overseas territories).'],
+[13,'Which European country gets almost all its electricity from hydropower?','Norway',['France','Netherlands','Denmark'],'Norway: about 90% of electricity from hydropower.'],
+[13,'Where is the Kiruna iron ore deposit?','Sweden',['Norway','Finland','Germany'],'Kiruna is one of the largest iron ore deposits in Europe.'],
+[13,'The main religion of the Scandinavian countries is…','Protestantism (Lutheranism)',['Catholicism','Orthodox Christianity','Anglicanism'],'Catholicism predominates in Southern Europe, Ireland, Belgium and Austria.'],
+[13,'How many official languages does Switzerland have?','Four',['Two','Three','Five'],'German, French, Italian and Romansh.'],
+[13,'Which state uses the euro without being an EU member?','Monaco',['Sweden','Denmark','Poland'],'The Vatican, San Marino, Andorra, Montenegro and Kosovo also use the euro.'],
+[13,'The main demographic problem of Western Europe is…','An ageing population and low birth rates',['A population explosion','High infant mortality','A male-dominated population'],'In many countries, population growth relies on immigration.'],
+[13,'Which microstate lies in the Pyrenees?','Andorra',['Monaco','Liechtenstein','San Marino'],'Andorra lies between France and Spain.'],
+[13,'Which Western European country is the most urbanized?','Belgium',['Portugal','Ireland','Greece'],'About 98% of Belgians live in cities.'],
+[13,'Which is Europe’s largest seaport?','Rotterdam',['Hamburg','Antwerp','Marseille'],'Rotterdam (Netherlands) is at the mouth of the Rhine.'],
+// ——— 14 ———
+[14,'What is Germany’s main industry of international specialization?','Car manufacturing',['Oil production','Textiles','Shipbuilding'],'Also chemicals, machine tools and electrical engineering.'],
+[14,'Where is Volkswagen headquartered?','Wolfsburg',['Stuttgart','Munich','Cologne'],'Stuttgart — Mercedes-Benz and Porsche; Munich — BMW.'],
+[14,'In which city is the chemical giant BASF based?','Ludwigshafen',['Hamburg','Bremen','Dresden'],'Ludwigshafen am Rhein is Europe’s largest chemical complex.'],
+[14,'Which is Germany’s largest seaport?','Hamburg',['Bremen','Rostock','Kiel'],'Hamburg lies on the Elbe.'],
+[14,'In which year did Germany shut down its last nuclear power plants?','2023',['2011','2018','2030'],'The nuclear phase-out (part of the Energiewende) was completed in April 2023.'],
+[14,'How many federal states (Länder) does Germany have?','16',['9','13','26'],'Including the city-states of Berlin, Hamburg and Bremen.'],
+[14,'Which is Germany’s main industrial region, formerly based on coal and steel?','The Ruhr',['Saarland','Bavaria','Silesia'],'The Ruhr agglomeration includes Dortmund, Essen, Duisburg and others.'],
+[14,'Which city is the centre of France’s aerospace industry (Airbus)?','Toulouse',['Lyon','Lille','Bordeaux'],'Toulouse is Europe’s largest aircraft-building centre.'],
+[14,'Lorraine in France is known as an old industrial region of…','Iron and steel making',['Winemaking','Aircraft building','Tourism'],'It was based on local iron ores and is now a depressed region.'],
+[14,'Which country is the largest agricultural producer in the EU?','France',['Germany','Spain','Poland'],'France: wheat, sugar beet, wine, dairy products.'],
+[14,'Which is France’s largest seaport?','Marseille',['Le Havre','Bordeaux','Brest'],'Marseille is on the Mediterranean; Le Havre at the mouth of the Seine.'],
+[14,'Bordeaux, Champagne and Burgundy are French regions famous for…','Winemaking',['Coal mining','Car manufacturing','Nuclear power'],'France is one of the two largest wine producers in the world (with Italy).'],
+[14,'The Sophia Antipolis technopolis is located…','In the south of France (Côte d’Azur)',['Near Paris','In Alsace','In Brittany'],'One of the first technology parks in Europe.'],
+[14,'The capital region of France is called…','Île-de-France',['Provence','Normandy','Aquitaine'],'Paris and its region produce about a third of France’s GDP.'],
+// ——— 15 ———
+[15,'Which Central and Eastern European country has the largest population?','Poland',['Romania','Czechia','Hungary'],'Poland has about 37 million people.'],
+[15,'What is the backbone of Poland’s power sector?','Coal-fired thermal power plants',['Nuclear power plants','Hydropower plants','Wind farms'],'Poland is the EU’s largest hard-coal producer; its first nuclear plant is still under construction.'],
+[15,'Poland’s Legnica–Głogów district is known for mining…','Copper',['Oil','Bauxite','Iron ore'],'Poland is a major producer of copper and silver (KGHM).'],
+[15,'Which of these ports belongs to Poland?','Gdańsk',['Klaipėda','Rostock','Constanța'],'Polish ports: Gdańsk, Gdynia, Szczecin.'],
+[15,'Poland is the EU’s largest producer of…','Apples',['Olives','Oranges','Rice'],'Poland is one of the world’s leading apple producers.'],
+[15,'Which capital is NOT on the Danube?','Prague',['Vienna','Budapest','Belgrade'],'Prague is on the Vltava. Vienna, Bratislava, Budapest and Belgrade are on the Danube.'],
+[15,'The Ploiești oil district is in…','Romania',['Hungary','Bulgaria','Poland'],'Ploiești is one of the oldest oil-industry centres in Europe.'],
+[15,'Which country is famous for producing rose oil?','Bulgaria',['Serbia','Croatia','Slovakia'],'The Valley of Roses near Kazanlak.'],
+[15,'In which country is the Škoda car plant?','Czechia',['Slovakia','Poland','Hungary'],'Mladá Boleslav. Slovakia leads the world in cars made per capita.'],
+[15,'Which Central and Eastern European country has a mostly Muslim population?','Albania',['Croatia','Slovenia','Bulgaria'],'Muslims are also the majority in Kosovo and the largest group in Bosnia and Herzegovina.'],
+[15,'Which currency is used in Poland?','The złoty',['The euro','The forint','The koruna'],'The forint is Hungary’s currency, the koruna Czechia’s.'],
+// ——— 16 ———
+[16,'What is the capital of Turkey?','Ankara',['Istanbul','Izmir','Antalya'],'Istanbul is the largest city and economic centre.'],
+[16,'Which straits does Turkey control?','The Bosporus and the Dardanelles',['Hormuz and Bab-el-Mandeb','Gibraltar and Messina','Kerch and Otranto'],'The regime of the straits is set by the 1936 Montreux Convention.'],
+[16,'Which city is the centre of Turkey’s car industry?','Bursa',['Ankara','Trabzon','Konya'],'Bursa and its surroundings host Renault, Fiat (Tofaş) and other plants.'],
+[16,'Turkey is the world leader in producing…','Hazelnuts',['Coffee','Cocoa','Rice'],'Turkey grows about 60–70% of the world’s hazelnuts.'],
+[16,'The Atatürk Dam was built on which river?','The Euphrates',['The Tigris','The Kızılırmak','The Nile'],'Part of the Southeastern Anatolia Project (GAP).'],
+[16,'Which sectors lead the Turkish economy?','Light industry (textiles), car manufacturing, tourism',['Oil and gas production','Semiconductor manufacturing','Diamond mining'],'Turkey is a major exporter of clothing, textiles, cars and household appliances.'],
+[16,'The Suez Canal connects…','The Mediterranean and the Red Sea',['The Black Sea and the Mediterranean','The Red Sea and the Persian Gulf','The Atlantic and the Mediterranean'],'Opened in 1869, owned by Egypt.'],
+[16,'Which is the most populous country in the Middle East and North Africa?','Egypt',['Turkey','Iran','Algeria'],'Egypt has more than 110 million people, concentrated in the Nile valley and delta.'],
+[16,'Ghawar, the world’s largest oil field, is in…','Saudi Arabia',['Kuwait','Iraq','Iran'],'Ghawar is the largest onshore oil field by reserves.'],
+[16,'Which country has the largest phosphate reserves?','Morocco',['Egypt','Tunisia','Jordan'],'Morocco (with Western Sahara) holds about 70% of world reserves.'],
+[16,'The Aswan High Dam is on which river?','The Nile',['The Euphrates','The Niger','The Jordan'],'The Aswan hydropower plant is in Egypt.'],
+[16,'Which is the only country in the region where Judaism predominates?','Israel',['Lebanon','Jordan','Cyprus'],'The other countries of the region are mostly Muslim.'],
+// ——— 17 ———
+[17,'Which is Africa’s most populous country?','Nigeria',['Ethiopia','Egypt','DR Congo'],'Nigeria has more than 220 million people.'],
+[17,'Which Sub-Saharan country has the most developed economy?','South Africa',['Nigeria','Kenya','Angola'],'South Africa is the only country in the region with a developed manufacturing sector.'],
+[17,'The Witwatersrand is the world’s largest mining district for…','Gold (South Africa)',['Copper (Zambia)','Diamonds (Botswana)','Oil (Nigeria)'],'Its centre is Johannesburg.'],
+[17,'Which country is the world leader in cobalt mining?','DR Congo',['South Africa','Zambia','Angola'],'DR Congo supplies about 70% of the world’s cobalt.'],
+[17,'Which country is Africa’s largest diamond producer (by value)?','Botswana',['South Africa','Namibia','Angola'],'Diamonds are the backbone of Botswana’s economy.'],
+[17,'Which country is considered the homeland of coffee?','Ethiopia',['Kenya','Brazil','Yemen'],'The name is linked to the Kaffa province.'],
+[17,'Which country is a major exporter of tea and cut flowers?','Kenya',['Chad','Niger','Mali'],'Kenya is one of the world’s largest tea exporters.'],
+[17,'Which is the largest oil producer in Tropical Africa?','Nigeria',['Kenya','Tanzania','Ethiopia'],'Oil is produced in the Niger Delta; Nigeria is an OPEC member.'],
+[17,'What is typical of agriculture in Tropical Africa?','Subsistence farming alongside export monocultures',['Highly mechanized grain farming','Intensive dairy farming','A predominance of greenhouse farms'],'Plantations (cocoa, coffee, tea) coexist with low-productivity subsistence farming.'],
+[17,'The Grand Ethiopian Renaissance Dam is built on…','The Blue Nile',['The White Nile','The Congo','The Zambezi'],'Africa’s largest hydropower plant, inaugurated in 2025.'],
+[17,'Which country is the leading producer of cocoa beans in Africa and the world?','Côte d’Ivoire',['Kenya','Angola','Madagascar'],'Ghana is second.'],
+[17,'Lake Kariba on the Zambezi lies on the border between…','Zambia and Zimbabwe',['Kenya and Uganda','South Africa and Namibia','Angola and Zambia'],'One of the largest reservoirs in the world.'],
+// ——— 18 ———
+[18,'Which is the world’s largest landlocked country by area?','Kazakhstan',['Mongolia','Chad','Bolivia'],'Kazakhstan is the 9th largest country in the world.'],
+[18,'What is the capital of Kazakhstan?','Astana',['Almaty','Shymkent','Karaganda'],'The capital moved from Almaty to Astana in 1997.'],
+[18,'Kashagan is…','An offshore oil field in the Caspian Sea',['A coal basin','A uranium mine','A spaceport'],'Other major Kazakh fields: Tengiz (oil), Karachaganak (gas condensate).'],
+[18,'The Ekibastuz basin is known for…','Open-pit coal mining',['Oil production','Copper mining','Cotton growing'],'Ekibastuz coal fuels some of the largest power plants.'],
+[18,'Which spaceport is in Kazakhstan?','Baikonur',['Plesetsk','Vostochny','Kourou'],'Baikonur is leased by Russia.'],
+[18,'Which Central Asian country has the largest population?','Uzbekistan',['Kazakhstan','Tajikistan','Turkmenistan'],'Uzbekistan has about 37 million people.'],
+[18,'Which crop has traditionally been the backbone of Uzbek agriculture?','Cotton',['Rice','Coffee','Tea'],'Irrigating cotton from the Amu Darya and Syr Darya led to the Aral Sea disaster.'],
+[18,'Which Central Asian country has the largest natural gas reserves?','Turkmenistan',['Kyrgyzstan','Tajikistan','Kazakhstan'],'The Galkynysh field is one of the largest in the world.'],
+[18,'The Nurek and Rogun hydropower plants are on which river?','The Vakhsh (Tajikistan)',['The Naryn (Kyrgyzstan)','The Irtysh (Kazakhstan)','The Amu Darya (Turkmenistan)'],'Tajikistan’s hydropower supplies the aluminium plant in Tursunzoda.'],
+[18,'Which environmental disaster is associated with Central Asia?','The shrinking of the Aral Sea',['Pollution of Lake Baikal','Desertification of the Sahel','Melting of Greenland’s glaciers'],'The cause was water withdrawal from the Amu Darya and Syr Darya for irrigation.'],
+[18,'Where does Kazakhstan rank in the world for uranium mining?','First',['Second','Fifth','Tenth'],'About 40% of world output.'],
+// ——— 19 ———
+[19,'Which city is called “India’s Silicon Valley”?','Bangalore (Bengaluru)',['Mumbai','Kolkata','Delhi'],'A centre of IT services and software development.'],
+[19,'Where is the centre of India’s “Bollywood” film industry?','Mumbai',['Delhi','Chennai','Bangalore'],'The name combines Bombay (Mumbai’s old name) and Hollywood.'],
+[19,'Which Indian regions are famous for tea?','Assam and Darjeeling',['Punjab and Haryana','Gujarat and Rajasthan','Kerala and Goa'],'Punjab is India’s “breadbasket” and the heart of the Green Revolution.'],
+[19,'In which product does India rank first in the world?','Milk',['Coffee','Maize','Wool'],'India is the largest milk producer (including buffalo milk).'],
+[19,'Which country is the main exporter of jute?','Bangladesh',['Pakistan','Sri Lanka','Nepal'],'Jute is grown in the Ganges–Brahmaputra delta.'],
+[19,'Which Indian steel centre was founded by the Tata company?','Jamshedpur',['Bangalore','Mumbai','Hyderabad'],'India’s steel industry is concentrated in the northeast of the Deccan Plateau.'],
+[19,'India is called the “pharmacy of the world” because of its…','Pharmaceutical industry (generics)',['Oil refining','Steel industry','Shipbuilding'],'India is the largest exporter of generic drugs.'],
+[19,'Which South Asian country is Buddhist?','Sri Lanka',['Pakistan','Bangladesh','Maldives'],'Buddhism is also the state religion of Bhutan.'],
+[19,'What is the capital of Pakistan?','Islamabad',['Karachi','Lahore','Peshawar'],'Karachi is Pakistan’s largest city and port.'],
+[19,'Which languages are official at the national level in India?','Hindi and English',['Hindi and Urdu','Bengali and English','Sanskrit and Hindi'],'In addition, the constitution recognizes 22 languages.'],
+[19,'Which type of climate shapes agriculture in South Asia?','Monsoon',['Mediterranean','Sharply continental','Arctic'],'The summer monsoon brings up to 80% of annual rainfall.'],
+[19,'Which South Asian country is most threatened by flooding from rising sea levels?','Maldives',['Nepal','Bhutan','Afghanistan'],'Most of the Maldives lies less than 1.5 m above sea level.'],
+// ——— 20 ———
+[20,'Which Indonesian island is the most populous (and the most populous island in the world)?','Java',['Sumatra','Borneo (Kalimantan)','Sulawesi'],'More than half of Indonesia’s population lives on Java.'],
+[20,'On which island is Indonesia’s new capital, Nusantara, being built?','Borneo (Kalimantan)',['Java','Sumatra','Bali'],'The capital is being moved away from overcrowded Jakarta.'],
+[20,'Indonesia is the world leader in mining…','Nickel',['Copper','Uranium','Lithium'],'Indonesia supplies about half of the world’s nickel.'],
+[20,'Indonesia is the world’s largest exporter of…','Thermal coal',['Oil','Wheat','Coffee'],'It is also a major exporter of palm oil and liquefied natural gas.'],
+[20,'Which religion predominates on the island of Bali?','Hinduism',['Islam','Buddhism','Catholicism'],'Islam predominates in the rest of Indonesia.'],
+[20,'Which Southeast Asian country is mostly Catholic?','The Philippines',['Vietnam','Malaysia','Thailand'],'Catholics also predominate in Timor-Leste.'],
+[20,'Which Southeast Asian country is landlocked?','Laos',['Cambodia','Myanmar','Vietnam'],'Laos is the only landlocked country in Southeast Asia.'],
+[20,'Which Southeast Asian countries are the largest rice exporters?','Thailand and Vietnam',['Singapore and Brunei','Indonesia and the Philippines','Malaysia and Laos'],'Indonesia and the Philippines are major rice importers.'],
+[20,'Which Southeast Asian country is one of the world’s biggest financial centres and ports?','Singapore',['Laos','Cambodia','Myanmar'],'Singapore is also a major oil-refining centre.'],
+[20,'Which countries does the Mekong flow through?','China, Myanmar, Laos, Thailand, Cambodia, Vietnam',['India, Bangladesh, Myanmar','Indonesia, Malaysia','The Philippines and Vietnam'],'The Mekong is Southeast Asia’s largest river; its delta in Vietnam is the main rice-growing area.'],
+[20,'Roughly how many islands does Indonesia have?','More than 17,000',['About 500','About 3,000','About 50,000'],'Indonesia is the world’s largest archipelagic state.'],
+[20,'Which Southeast Asian country is the world’s second-largest coffee producer?','Vietnam',['Thailand','The Philippines','Singapore'],'Vietnam specializes in robusta coffee.'],
+// ——— 21 ———
+[21,'Which is the largest island of Japan?','Honshu',['Hokkaido','Kyushu','Shikoku'],'The four main islands: Honshu, Hokkaido, Kyushu, Shikoku.'],
+[21,'What is the main feature of Japan’s resource base?','Scarce mineral resources and dependence on imported raw materials',['The largest oil reserves in Asia','Abundant coal and iron ore','Self-sufficiency in food'],'Japan imports almost all its oil, gas and iron ore.'],
+[21,'Where is most of Japan’s population and economic activity concentrated?','On the Pacific coast (the Pacific Belt)',['On Hokkaido','On the Sea of Japan coast','In the inland mountain areas'],'The Tokaido megalopolis: Tokyo — Nagoya — Osaka.'],
+[21,'What is Japan’s form of government?','A constitutional monarchy (emperor)',['A presidential republic','An absolute monarchy','A parliamentary republic'],'The emperor is a symbol of the state; power lies with parliament and the government.'],
+[21,'The science city of Tsukuba in Japan is…','A technopolis (science city)',['An iron and steel centre','The main fishing port','A textile centre'],'Tsukuba is Japan’s largest research centre.'],
+[21,'What is Japan’s main crop?','Rice',['Wheat','Maize','Cotton'],'Japan is also one of the largest consumers of seafood.'],
+[21,'Along which line is the Korean Peninsula divided?','Around the 38th parallel',['Along the 49th parallel','Along the 17th parallel','Along the Yalu River'],'The division was fixed in 1948; after the 1950–1953 war came the demilitarized zone.'],
+[21,'From which country was Macao returned to China in 1999?','Portugal',['United Kingdom','Spain','Japan'],'Hong Kong was returned by the UK in 1997.'],
+[21,'Which East Asian country is landlocked?','Mongolia',['North Korea','South Korea','Japan'],'Mongolia is the second-largest landlocked country after Kazakhstan.'],
+[21,'Which country has the highest share of older people and a shrinking population?','Japan',['North Korea','Mongolia','China'],'Japan’s population has been shrinking since the late 2000s.'],
+[21,'Which Japanese city is home to Toyota?','Toyota (near Nagoya)',['Sapporo','Hiroshima','Fukuoka'],'The city is named after the company.'],
+[21,'Which are the leading branches of Japanese industry?','Cars, electronics, robotics',['Coal and oil production','Light and food industries','Forestry and woodworking'],'Japan leads in industrial robots and is one of the top car producers.'],
+// ——— 22 ———
+[22,'Which was China’s first special economic zone?','Shenzhen',['Shanghai','Beijing','Tianjin'],'Established in 1980 next to Hong Kong.'],
+[22,'How many municipalities directly under the central government does China have?','4',['2','5','7'],'Beijing, Shanghai, Tianjin, Chongqing.'],
+[22,'Which of China’s economic zones is the most developed?','The Eastern (coastal) zone',['The Western zone','The Central zone','The Northwestern zone'],'The Eastern zone has the SEZs, ports and most of the industry.'],
+[22,'The Three Gorges Dam, the world’s largest hydropower plant, is on which river?','The Yangtze',['The Yellow River','The Amur','The Mekong'],'Capacity: about 22.5 GW.'],
+[22,'What is the main grain crop in northern China?','Wheat',['Rice','Tea','Cotton'],'The north grows wheat and maize; the south grows rice and tea.'],
+[22,'Which is the world’s largest container port?','Shanghai',['Rotterdam','Singapore','Los Angeles'],'Shanghai is first, Singapore second.'],
+[22,'In which year did China launch its policy of “reform and opening up”?','1978',['1949','1966','1991'],'The reforms of Deng Xiaoping.'],
+[22,'Daqing is…','China’s largest oil field',['A coal basin','A special economic zone','A tea-growing centre'],'It is in the Northeast (Heilongjiang province).'],
+[22,'Which Chinese province is the main coal region?','Shanxi',['Guangdong','Hainan','Yunnan'],'Shanxi and Inner Mongolia lead coal mining.'],
+[22,'Which special administrative regions (SARs) does China have?','Hong Kong and Macao',['Tibet and Xinjiang','Shanghai and Beijing','Hainan and Taiwan'],'They operate under the “one country, two systems” principle.'],
+[22,'Where does China rank in the world for electricity generation?','First',['Second','Third','Fifth'],'China generates almost a third of the world’s electricity.'],
+[22,'Which part of China is the most sparsely populated?','The West (Tibet, Xinjiang)',['The East','The Pearl River Delta','The North China Plain'],'More than 90% of the population lives in the eastern half of the country.'],
+// ——— 23 ———
+[23,'How many states make up the USA?','50',['48','52','13'],'50 states plus the District of Columbia. Hawaii and Alaska became states in 1959.'],
+[23,'What are the four macro-regions of the USA?','Northeast, Midwest, South, West',['North, South, East, West','Atlantic, Prairies, Rockies, Pacific','New England, Texas, California, Alaska'],'The division used by the US Census Bureau.'],
+[23,'Which US macro-region was called the “workshop of the nation”?','The Northeast',['The South','The West','The Midwest'],'The Northeast is the historic centre of industry and finance (New York).'],
+[23,'The US “Corn Belt” lies in which macro-region?','The Midwest',['The Northeast','The South','The West'],'The Midwest is the “breadbasket” of the USA.'],
+[23,'In which state is Silicon Valley?','California',['Texas','Massachusetts','Washington'],'The San Francisco – San Jose area.'],
+[23,'Which city is the traditional centre of the US car industry?','Detroit',['Chicago','Pittsburgh','Houston'],'In the state of Michigan.'],
+[23,'Which city is an oil-refining centre and home to NASA’s mission control?','Houston',['Dallas','Miami','Denver'],'Houston, Texas.'],
+[23,'Which US state is the largest by area?','Alaska',['Texas','California','Montana'],'Alaska was bought from Russia in 1867.'],
+[23,'Which US state is the most populous?','California',['Texas','Florida','New York'],'California has about 39 million people.'],
+[23,'The Permian Basin, the main US oil-producing area, lies in…','Texas and New Mexico',['Alaska','California','Pennsylvania'],'Shale oil production.'],
+[23,'Which US macro-region is part of the “Sun Belt” and has the fastest population growth?','The South',['The Northeast','The Midwest','Alaska'],'The South and West form the “Sun Belt”; the Northeast and Midwest the “Frost (Rust) Belt”.'],
+[23,'Where does the USA rank in the world by population?','Third',['First','Second','Fifth'],'After India and China; about 340 million people.'],
+[23,'Which group is the largest minority in the USA?','Hispanic and Latino Americans',['African Americans','Asian Americans','Native Americans'],'About 19–20% of the population.'],
+[23,'The USA is the world leader in producing…','Maize (corn)',['Rice','Coffee','Natural rubber'],'It is also one of the leaders in soybean and meat production.'],
+// ——— 24 ———
+[24,'How many independent states are there in Latin America?','33',['20','27','45'],'12 in South America, 8 in Central America and Mexico, 13 in the Caribbean.'],
+[24,'What language is spoken in Brazil?','Portuguese',['Spanish','French','English'],'Brazil is a former Portuguese colony.'],
+[24,'What is the capital of Brazil?','Brasília',['Rio de Janeiro','São Paulo','Salvador'],'The capital moved there in 1960; São Paulo is the largest city.'],
+[24,'Carajás is…','Brazil’s largest iron ore deposit',['An oil field in Venezuela','A copper mine in Chile','A coal basin in Colombia'],'It is in the state of Pará, in Amazonia.'],
+[24,'The Itaipu hydropower plant on the Paraná River was built jointly by Brazil and…','Paraguay',['Argentina','Uruguay','Bolivia'],'One of the largest hydropower plants in the world.'],
+[24,'Brazil is the world leader in producing…','Coffee, sugar cane, soybeans',['Rice, tea, jute','Wheat, barley, flax','Cocoa, palm oil, rubber'],'Also orange juice and beef.'],
+[24,'How does Brazil use sugar cane for energy?','It produces ethanol as a motor fuel',['It burns it in nuclear plants','It exports it to China','It does not use it'],'Brazil is the world’s second-largest producer of bioethanol.'],
+[24,'What are people of mixed European and Indigenous descent called?','Mestizos',['Mulattoes','Zambos','Creoles'],'Mulattoes — European and African descent; zambos — Indigenous and African descent.'],
+[24,'What are people of mixed European and African descent called?','Mulattoes',['Mestizos','Zambos','Gauchos'],'There are many mulattoes in Brazil and the Caribbean.'],
+[24,'When did the Panama Canal come under Panamanian control?','In 1999',['In 1914','In 1977','In 2016'],'The canal opened in 1914 and was controlled by the USA until 1999.'],
+[24,'Maquiladoras — assembly plants near the US border — are typical of…','Mexico',['Brazil','Argentina','Cuba'],'They use cheap labour and duty-free imported components.'],
+[24,'Which Latin American country specializes in copper (Chuquicamata)?','Chile',['Bolivia','Ecuador','Colombia'],'Chile is the world leader in copper.'],
+[24,'Argentina’s Pampas are the main region for…','Grain farming and beef cattle',['Oil production','Coffee growing','Banana production'],'Argentina is a major exporter of wheat, maize, soybeans and beef.'],
+[24,'Which Latin American country is French-speaking?','Haiti',['Jamaica','Guyana','Suriname'],'Jamaica and Guyana are English-speaking; Suriname is Dutch-speaking.'],
+[24,'How many states does Brazil have?','26 plus the Federal District',['50','16','32'],'Brazil is a federal republic.'],
+[24,'Which Brazilian company is one of the world’s largest aircraft makers?','Embraer',['Petrobras','Vale','Gerdau'],'Petrobras — oil; Vale — mining (iron ore).'],
+// ——— 25 ———
+[25,'What is the capital of Australia?','Canberra',['Sydney','Melbourne','Perth'],'Sydney is the largest city.'],
+[25,'The Pilbara is Australia’s main region for mining…','Iron ore',['Coal','Oil','Opals'],'In Western Australia.'],
+[25,'Where does most of Australia’s population live?','On the southeastern and eastern coast',['In the central desert','On the northern coast','On Tasmania'],'Sydney, Melbourne, Brisbane, Canberra.'],
+[25,'In which livestock product has Australia historically been the world leader?','Wool (Merino sheep)',['Pork','Milk','Poultry'],'Australia is the largest exporter of wool.'],
+[25,'What are Australia’s form of government and territorial structure?','A constitutional monarchy and a federation',['A presidential republic and a unitary state','An absolute monarchy and a federation','A parliamentary republic and a confederation'],'The head of state is the British monarch; 6 states and territories.'],
+[25,'Fiji belongs to…','Melanesia',['Polynesia','Micronesia','Australasia'],'Melanesia: New Guinea, the Solomon Islands, Vanuatu, New Caledonia, Fiji.'],
+[25,'Samoa, Tonga and Tuvalu belong to…','Polynesia',['Melanesia','Micronesia','Indonesia'],'Polynesia (“many islands”): the triangle of Hawaii — New Zealand — Easter Island.'],
+[25,'Nauru, Palau and the Marshall Islands belong to…','Micronesia',['Melanesia','Polynesia','Australia'],'Micronesia means “small islands”.'],
+[25,'Nauru’s economy was historically based on mining…','Phosphates',['Gold','Oil','Nickel'],'The phosphate deposits are almost exhausted.'],
+[25,'New Zealand is the world’s largest exporter of…','Dairy products',['Iron ore','Coffee','Oil'],'Also lamb and wool.'],
+[25,'Which country leads the world in lithium mining?','Australia',['Chile','China','Argentina'],'Australia extracts lithium from spodumene ores.'],
+[25,'Which country has the greatest linguistic diversity (more than 800 languages)?','Papua New Guinea',['Australia','Fiji','New Zealand'],'About 840 languages.'],
+[25,'Which basin supplies water to the pastures of inland Australia?','The Great Artesian Basin',['The Murray–Darling Basin','The Great Barrier Basin','The Western Australian Basin'],'One of the largest artesian basins in the world.'],
+[25,'Which Oceanian state is threatened by flooding from rising sea levels?','Tuvalu',['Papua New Guinea','New Zealand','Fiji'],'Tuvalu’s atolls rise only 4–5 m above sea level.'],
+[25,'What share of Australia’s population are Indigenous peoples (Aboriginal and Torres Strait Islanders)?','About 3–4%',['About 25%','About 50%','Less than 0.1%'],'Most Australians are of European descent; the share of Asian immigrants is growing.'],
+];
+
+</script>
+<script>
 (function () {
 'use strict';
 
@@ -1031,18 +1638,32 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const sample = (a, n) => shuffle(a).slice(0, n);
 const fmtTime = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-const plural = (n, one, few, many) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? few : many); };
-const countries = n => `${n} ${plural(n, 'страна', 'страны', 'стран')}`;
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem('geo:' + k)); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem('geo:' + k, JSON.stringify(v)); } catch (e) { /* хранилище недоступно */ } },
 };
+
+// ===================== Язык / Language =====================
+let LANG = store.get('lang') || ((navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en');
+if (LANG !== 'ru' && LANG !== 'en') LANG = 'ru';
+const L = (ru, en) => (LANG === 'en' ? en : ru);
+const cmp = (a, b) => a.localeCompare(b, LANG);
+const pluralRu = (n, one, few, many) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? few : many); };
+const countries = n => L(`${n} ${pluralRu(n, 'страна', 'страны', 'стран')}`, `${n} ${n === 1 ? 'country' : 'countries'}`);
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.title = L('ГеоТренажёр', 'GeoTrainer');
+}
+applyLang();
+
 function saveBest(id, pct, secs, label) {
   if (!id) return;
   const b = store.get('best:' + id);
-  if (!b || pct > b.pct || (pct === b.pct && secs < b.secs)) store.set('best:' + id, { pct, secs, label, at: Date.now() });
-  else if (label && !b.label) store.set('best:' + id, Object.assign(b, { label }));
+  const labels = Object.assign({}, b && b.labels, label ? { [LANG]: label } : {});
+  if (!b || pct > b.pct || (pct === b.pct && secs < b.secs)) store.set('best:' + id, { pct, secs, labels, at: Date.now() });
+  else store.set('best:' + id, Object.assign(b, { labels }));
 }
 function allBest() {
   const out = [];
@@ -1054,53 +1675,75 @@ function allBest() {
   } catch (e) { /* хранилище недоступно */ }
   return out;
 }
+const bestLabel = x => (x.labels && (x.labels[LANG] || x.labels.ru || x.labels.en)) || x.label || x.id;
 const buzz = () => { try { if (navigator.vibrate) navigator.vibrate(35); } catch (e) { /* нет вибрации */ } };
 const best = id => { const b = store.get('best:' + id); return b ? `${b.pct}%` : ''; };
 
 // ===================== Данные =====================
 const C = {}, BYNAME = {};
 COUNTRIES.forEach(([key, name, cont, sp]) => { C[key] = { key, name, cont, special: !!sp }; BYNAME[name] = key; });
-const nameOf = k => (C[k] ? C[k].name : k);
-const keysOf = names => names.map(n => { const k = BYNAME[n]; if (!k) console.warn('Неизвестная страна:', n); return k; }).filter(Boolean);
+const ruName = k => (C[k] ? C[k].name : k);             // русское имя — ключ во всех справочниках
+const nameOf = k => (C[k] ? L(C[k].name, COUNTRY_EN[k] || C[k].name) : k);
+const keysOf = names => names.map(n => { const k = BYNAME[n]; if (!k) console.warn('Unknown country:', n); return k; }).filter(Boolean);
 const UN_KEYS = Object.keys(C).filter(k => !C[k].special); // члены ООН + Ватикан
+const byName = (a, b) => cmp(nameOf(a), nameOf(b));
 
-Object.keys(MONARCHIES).concat(Object.keys(FEDERATIONS)).forEach(n => { if (!BYNAME[n]) console.warn('Неизвестная страна:', n); });
-
-const govOf = k => (MONARCHIES[nameOf(k)] ? MONARCHIES[nameOf(k)][0] : 'rep');
+const govOf = k => (MONARCHIES[ruName(k)] ? MONARCHIES[ruName(k)][0] : 'rep');
+const govLabel = t => L(GOV_TYPES[t].label, GOV_LABELS_EN[t]);
 const govInfo = k => {
-  const n = nameOf(k), m = MONARCHIES[n];
-  if (m) return `${GOV_TYPES[m[0]].label}. Глава государства: ${m[1]}`;
-  return REPUBLIC_NOTES[n] ? `Республика: ${REPUBLIC_NOTES[n]}` : 'Республика';
+  const n = ruName(k), m = MONARCHIES[n];
+  if (m) return L(`${GOV_TYPES[m[0]].label}. Глава государства: ${m[1]}`, `${GOV_LABELS_EN[m[0]]}. Head of state: ${MONARCHY_EN[n]}`);
+  const note = L(REPUBLIC_NOTES[n], REPUBLIC_NOTES_EN[n]);
+  return note ? L(`Республика: ${note}`, `Republic: ${note}`) : L('Республика', 'Republic');
 };
-const isFed = k => !!FEDERATIONS[nameOf(k)];
+const isFed = k => !!FEDERATIONS[ruName(k)];
+const fedLabel = () => L('Федерация', 'Federation');
+const uniLabel = () => L('Унитарное государство', 'Unitary state');
 const fedInfo = k => {
-  const n = nameOf(k);
-  if (FEDERATIONS[n]) return `Федерация: ${FEDERATIONS[n]}`;
-  return UNITARY_NOTES[n] ? UNITARY_NOTES[n][0].toUpperCase() + UNITARY_NOTES[n].slice(1) : 'Унитарное государство';
+  const n = ruName(k);
+  if (FEDERATIONS[n]) return `${fedLabel()}: ${L(FEDERATIONS[n], FEDERATIONS_EN[n])}`;
+  const note = L(UNITARY_NOTES[n], UNITARY_NOTES_EN[n]);
+  return note ? cap(note) : uniLabel();
 };
 
-const ORG_SETS = ORGS.map(o => ({ short: o.short, set: new Set(keysOf(o.members)) }));
-const orgsOf = k => ORG_SETS.filter(o => o.set.has(k)).map(o => o.short);
+const orgT = o => (LANG === 'en' && ORGS_EN[o.id]) ? ORGS_EN[o.id] : o;
+const orgShort = o => orgT(o).short;
+const orgName = o => orgT(o).name;
+const orgInfo = o => orgT(o).info;
+const ORG_SETS = ORGS.map(o => ({ o, set: new Set(keysOf(o.members)) }));
+const orgsOf = k => ORG_SETS.filter(x => x.set.has(k)).map(x => orgShort(x.o));
 const countryInfo = k => {
   const orgs = orgsOf(k), parts = [];
-  if (C[k] && !C[k].special) parts.push(GOV_TYPES[govOf(k)].label + (isFed(k) ? ', федерация' : ''));
-  parts.push(orgs.length ? 'Входит в: ' + orgs.join(', ') : 'Не входит в организации из списка');
+  if (C[k] && !C[k].special) parts.push(govLabel(govOf(k)) + (isFed(k) ? L(', федерация', ', federation') : ''));
+  parts.push(orgs.length ? L('Входит в: ', 'Member of: ') + orgs.join(', ') : L('Не входит в организации из списка', 'Not a member of any listed organization'));
   return parts.join('. ');
 };
 
 const REGION_FILTERS = [
-  { id: 'ALL', label: 'Весь мир', conts: null, view: null, center: 10 },
-  { id: 'EU', label: 'Европа', conts: ['EU'], view: [-25, 34, 45, 71] },
-  { id: 'AS', label: 'Азия', conts: ['AS'], view: [25, -11, 150, 56], center: 90 },
-  { id: 'AF', label: 'Африка', conts: ['AF'], view: [-26, -36, 60, 38] },
-  { id: 'AM', label: 'Америка', conts: ['NA', 'SA'], view: [-170, -56, -30, 72] },
-  { id: 'OC', label: 'Океания', conts: ['OC'], view: [110, -48, 200, 20], center: 160 },
+  { id: 'ALL', ru: 'Весь мир', en: 'Whole world', conts: null, view: null, center: 10 },
+  { id: 'EU', ru: 'Европа', en: 'Europe', conts: ['EU'], view: [-25, 34, 45, 71] },
+  { id: 'AS', ru: 'Азия', en: 'Asia', conts: ['AS'], view: [25, -11, 150, 56], center: 90 },
+  { id: 'AF', ru: 'Африка', en: 'Africa', conts: ['AF'], view: [-26, -36, 60, 38] },
+  { id: 'AM', ru: 'Америка', en: 'Americas', conts: ['NA', 'SA'], view: [-170, -56, -30, 72] },
+  { id: 'OC', ru: 'Океания', en: 'Oceania', conts: ['OC'], view: [110, -48, 200, 20], center: 160 },
 ];
+const rLabel = r => L(r.ru, r.en);
 const regionKeys = r => UN_KEYS.filter(k => !r.conts || r.conts.includes(C[k].cont));
 
-const STRAIT_PINS = STRAITS.map((s, i) => ({ key: 's' + i, lonlat: s[1], label: s[0] }));
-const straitName = k => STRAITS[+k.slice(1)][0];
-const straitInfo = k => { const s = STRAITS[+k.slice(1)]; return `Соединяет ${s[2]}; разделяет ${s[3]}.`; };
+const straitName = k => { const i = +k.slice(1); return L(STRAITS[i][0], STRAITS_EN[i][0]); };
+const straitInfo = k => {
+  const i = +k.slice(1), s = STRAITS[i], e = STRAITS_EN[i];
+  return L(`Соединяет ${s[2]}; разделяет ${s[3]}.`, `Connects ${e[1]}; separates ${e[2]}.`);
+};
+const straitPins = () => STRAITS.map((s, i) => ({ key: 's' + i, lonlat: s[1], label: straitName('s' + i) }));
+
+const topicName = n => L(TOPICS[n], TOPICS_EN[n]);
+const quizQ = i => {
+  const q = QUIZ[i];
+  if (LANG !== 'en') return { t: q.t, q: q.q, a: q.a, w: q.w, e: q.e };
+  const e = QUIZ_EN[i];
+  return { t: e[0], q: e[1], a: e[2], w: e[3], e: e[4] };
+};
 
 // Геометрия карты
 const FEATURES = topojson.feature(WORLD_TOPO, WORLD_TOPO.objects.countries).features;
@@ -1154,7 +1797,7 @@ function back() {
 window.addEventListener('popstate', () => { if (skipPop > 0) { skipPop--; return; } pop(); });
 
 function topbar(title, stats = '') {
-  return `<header class="topbar"><button class="back" aria-label="Назад">‹</button><div class="title">${esc(title)}</div><div class="stats">${stats}</div></header>`;
+  return `<header class="topbar"><button class="back" aria-label="${L('Назад', 'Back')}">‹</button><div class="title">${esc(title)}</div><div class="stats">${stats}</div></header>`;
 }
 function bindBack() { const b = $('.back'); if (b) b.onclick = back; }
 
@@ -1328,7 +1971,7 @@ function gameShell(title, withTimer = true) {
     ${topbar(title, withTimer ? '<span class="prog"></span><span class="timer">0:00</span>' : '')}
     <div class="progress"><div></div></div>
     <div class="prompt"></div>
-    <div class="mapwrap"><div class="zoombtns"><button data-z="in" aria-label="Приблизить">+</button><button data-z="out" aria-label="Отдалить">−</button><button data-z="home" aria-label="Исходный вид">⟲</button></div></div>
+    <div class="mapwrap"><div class="zoombtns"><button data-z="in" aria-label="${L('Приблизить', 'Zoom in')}">+</button><button data-z="out" aria-label="${L('Отдалить', 'Zoom out')}">−</button><button data-z="home" aria-label="${L('Исходный вид', 'Reset view')}">⟲</button></div></div>
     <div class="panel"></div></div>`;
   bindBack();
   return { prompt: $('.prompt'), mapEl: $('.mapwrap'), panel: $('.panel'), prog: $('.prog'), timerEl: $('.timer'), bar: $('.progress>div') };
@@ -1343,26 +1986,27 @@ function makeTimer(el) {
 function stars(pct) { const n = pct >= 95 ? 3 : pct >= 75 ? 2 : pct >= 50 ? 1 : 0; return '★'.repeat(n) + '☆'.repeat(3 - n); }
 function inlineResult(ui, r) {
   ui.bar.style.width = '100%';
-  ui.prompt.innerHTML = `Результат: <b>${r.pct}%</b> <span class="sub">${r.line}</span>`;
+  ui.prompt.innerHTML = `${L('Результат', 'Score')}: <b>${r.pct}%</b> <span class="sub">${r.line}</span>`;
   const list = r.mistakes && r.mistakes.length
-    ? `<details style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">${r.mistakesTitle || 'Ошибки'} (${r.mistakes.length})</summary><div class="namechips" style="margin-top:6px">${r.mistakes.map(m => `<button data-k="${esc(m.key)}">${esc(m.name)}${m.note ? ' · ' + esc(m.note) : ''}</button>`).join('')}</div></details>`
+    ? `<details style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">${r.mistakesTitle || L('Ошибки', 'Mistakes')} (${r.mistakes.length})</summary><div class="namechips" style="margin-top:6px">${r.mistakes.map(m => `<button data-k="${esc(m.key)}">${esc(m.name)}${m.note ? ' · ' + esc(m.note) : ''}</button>`).join('')}</div></details>`
     : '';
   ui.panel.innerHTML = `${r.legend || ''}${list}<div class="btnrow">
-      <button class="btn ghost" data-a="menu">Меню</button>
-      ${r.onRetryWrong ? '<button class="btn ghost" data-a="wrong">Ошибки</button>' : ''}
-      <button class="btn" data-a="retry">Ещё раз</button></div>`;
+      <button class="btn ghost" data-a="menu">${L('Меню', 'Menu')}</button>
+      ${r.onRetryWrong ? `<button class="btn ghost" data-a="wrong">${L('Ошибки', 'Mistakes')}</button>` : ''}
+      <button class="btn" data-a="retry">${L('Ещё раз', 'Play again')}</button></div>`;
   ui.panel.querySelector('[data-a=menu]').onclick = back;
   ui.panel.querySelector('[data-a=retry]').onclick = r.onRetry;
   if (r.onRetryWrong) ui.panel.querySelector('[data-a=wrong]').onclick = r.onRetryWrong;
   ui.panel.querySelectorAll('.namechips button').forEach(b => { b.onclick = () => r.onChip && r.onChip(b.dataset.k); });
 }
+const ordinalTry = n => L(`${n}-я попытка`, ['1st', '2nd', '3rd'][n - 1] + ' try');
 
 // ===================== Режим: найди на карте =====================
 // cfg: { id, title, keys, view, center, pins, nameOf, infoOf, verb }
 function playFind(cfg) {
   const ui = gameShell(cfg.title);
   const nm = cfg.nameOf || nameOf;
-  ui.panel.innerHTML = `<div class="btnrow"><button class="btn ghost" data-a="skip">Не знаю — показать</button></div>`;
+  ui.panel.innerHTML = `<div class="btnrow"><button class="btn ghost" data-a="skip">${L('Не знаю — показать', 'Don’t know — show me')}</button></div>`;
   const map = GeoMap(ui.mapEl, { center: cfg.center || 0, pins: cfg.pins, noLandClick: !!cfg.pins, onClick });
   map.setHome(cfg.view); map.fitView(cfg.view, false);
   const queue = shuffle(cfg.keys), res = {};
@@ -1373,7 +2017,7 @@ function playFind(cfg) {
   function ask() {
     if (i >= queue.length) return finish();
     tries = 0; busy = false;
-    ui.prompt.innerHTML = `${cfg.verb || 'Найдите'}: <b>${esc(nm(queue[i]))}</b>`;
+    ui.prompt.innerHTML = `${cfg.verb || L('Найдите', 'Find')}: <b>${esc(nm(queue[i]))}</b>`;
     ui.prog.textContent = `${i + 1}/${queue.length}`;
     ui.bar.style.width = (i / queue.length * 100) + '%';
   }
@@ -1383,14 +2027,14 @@ function playFind(cfg) {
     if (busy) {
       // ответ показан — чтобы продолжить, нужно нажать на подсвеченный объект
       if (k === target) { map.remove(target, 'hl'); map.add(target, 'fail'); map.tip(nm(k), ev, 'bad', 900); i++; ask(); }
-      else map.tip('Нажмите на подсвеченный: ' + nm(target), ev, 'bad');
+      else map.tip(L('Нажмите на подсвеченный: ', 'Tap the highlighted one: ') + nm(target), ev, 'bad');
       return;
     }
     if (k === target) {
       res[target] = tries; map.add(target, 'ok' + (tries + 1)); map.tip(nm(k), ev, 'good', 900);
       i++; ask();
     } else {
-      tries++; buzz(); map.flash(k); map.tip('Это: ' + nm(k), ev, 'bad');
+      tries++; buzz(); map.flash(k); map.tip(L('Это: ', 'That’s ') + nm(k), ev, 'bad');
       if (tries >= 3) { res[target] = 3; reveal(); }
     }
   }
@@ -1398,7 +2042,7 @@ function playFind(cfg) {
     busy = true;
     const t = queue[i];
     map.add(t, 'hl'); map.ensureVisible(t);
-    ui.prompt.innerHTML = `Правильный ответ: <b>${esc(nm(t))}</b> <span class="sub">подсвечен на карте — нажмите на него, чтобы продолжить</span>`;
+    ui.prompt.innerHTML = `${L('Правильный ответ', 'Correct answer')}: <b>${esc(nm(t))}</b> <span class="sub">${L('подсвечен на карте — нажмите на него, чтобы продолжить', 'highlighted on the map — tap it to continue')}</span>`;
   }
   function finish() {
     done = true; timer.stop();
@@ -1406,15 +2050,15 @@ function playFind(cfg) {
     const pts = queue.reduce((s, k) => s + [1, 0.5, 0.25, 0][res[k]], 0);
     const pct = Math.round(pts / n * 100);
     const first = queue.filter(k => res[k] === 0).length;
-    saveBest(cfg.id, pct, timer.secs(), cfg.title + ' — найди на карте');
+    saveBest(cfg.id, pct, timer.secs(), cfg.title + L(' — найди на карте', ' — find on the map'));
     map.home();
     const wrong = queue.filter(k => res[k] > 0);
     inlineResult(ui, {
-      pct, line: `С первой попытки: ${first} из ${n} · время ${fmtTime(timer.secs())} · ${stars(pct)}`,
-      mistakes: wrong.map(k => ({ key: k, name: nm(k), note: res[k] === 3 ? 'не найдено' : `${res[k] + 1}-я попытка` })),
-      legend: `<div class="legend"><span><i style="background:var(--c-ok1)"></i>1-я попытка</span><span><i style="background:var(--c-ok2)"></i>2-я</span><span><i style="background:var(--c-ok3)"></i>3-я</span><span><i style="background:var(--c-fail)"></i>не найдено</span></div>`,
+      pct, line: L(`С первой попытки: ${first} из ${n}`, `First try: ${first} of ${n}`) + ` · ${L('время', 'time')} ${fmtTime(timer.secs())} · ${stars(pct)}`,
+      mistakes: wrong.map(k => ({ key: k, name: nm(k), note: res[k] === 3 ? L('не найдено', 'not found') : ordinalTry(res[k] + 1) })),
+      legend: `<div class="legend"><span><i style="background:var(--c-ok1)"></i>${ordinalTry(1)}</span><span><i style="background:var(--c-ok2)"></i>${L('2-я', '2nd')}</span><span><i style="background:var(--c-ok3)"></i>${L('3-я', '3rd')}</span><span><i style="background:var(--c-fail)"></i>${L('не найдено', 'not found')}</span></div>`,
       onRetry: () => replace(playFind, cfg),
-      onRetryWrong: wrong.length ? () => replace(playFind, Object.assign({}, cfg, { keys: wrong, id: null, title: cfg.title + ' — ошибки' })) : null,
+      onRetryWrong: wrong.length ? () => replace(playFind, Object.assign({}, cfg, { keys: wrong, id: null, title: cfg.title + L(' — ошибки', ' — mistakes') })) : null,
       onChip: k => { map.focus(k, true, { frac: 0.25, pointZoom: 4 }); map.flash(k, 'blink', 2000); },
     });
   }
@@ -1428,8 +2072,8 @@ function playSelect(cfg) {
   const ui = gameShell(cfg.title);
   const target = new Set(cfg.keys), sel = new Set(), n = target.size;
   let checked = false;
-  ui.prompt.innerHTML = `Отметьте все ${esc(cfg.what)} <span class="sub">Всего нужно найти: ${countries(n)}. Повторное нажатие снимает отметку.</span>`;
-  ui.panel.innerHTML = `<div class="btnrow"><button class="btn ghost" data-a="clear">Сбросить</button><button class="btn" data-a="check">Проверить</button></div>`;
+  ui.prompt.innerHTML = `${L('Отметьте все', 'Select all')} ${esc(cfg.what)} <span class="sub">${L(`Всего нужно найти: ${countries(n)}. Повторное нажатие снимает отметку.`, `Find ${countries(n)} in total. Tap again to deselect.`)}</span>`;
+  ui.panel.innerHTML = `<div class="btnrow"><button class="btn ghost" data-a="clear">${L('Сбросить', 'Clear')}</button><button class="btn" data-a="check">${L('Проверить', 'Check')}</button></div>`;
   const map = GeoMap(ui.mapEl, { center: cfg.center || 0, onClick });
   map.setHome(cfg.view); map.fitView(cfg.view, false);
   const timer = makeTimer(ui.timerEl);
@@ -1440,7 +2084,7 @@ function playSelect(cfg) {
 
   function onClick(k, ev) {
     if (checked) {
-      map.tip(nameOf(k) + (target.has(k) ? ' — входит' : ' — не входит') + (cfg.infoOf ? '. ' + cfg.infoOf(k) : ''), ev, target.has(k) ? 'good' : '', 2600);
+      map.tip(nameOf(k) + (target.has(k) ? L(' — входит', ' — included') : L(' — не входит', ' — not included')) + (cfg.infoOf ? '. ' + cfg.infoOf(k) : ''), ev, target.has(k) ? 'good' : '', 2600);
       return;
     }
     if (sel.has(k)) { sel.delete(k); map.remove(k, 'sel'); }
@@ -1457,14 +2101,14 @@ function playSelect(cfg) {
     missed.forEach(k => { map.add(k, 'miss'); map.flash(k, 'blink', 2000); });
     extra.forEach(k => map.add(k, 'fail'));
     const pct = Math.round(hits.length / (n + extra.length) * 100);
-    saveBest(cfg.id, pct, timer.secs(), cfg.title + ' — отметь все');
+    saveBest(cfg.id, pct, timer.secs(), cfg.title + L(' — отметь все', ' — select all'));
     map.home();
-    const mistakes = missed.map(k => ({ key: k, name: nameOf(k), note: 'пропущено' }))
-      .concat(extra.map(k => ({ key: k, name: nameOf(k), note: 'лишнее' })));
+    const mistakes = missed.map(k => ({ key: k, name: nameOf(k), note: L('пропущено', 'missed') }))
+      .concat(extra.map(k => ({ key: k, name: nameOf(k), note: L('лишнее', 'wrong pick') })));
     inlineResult(ui, {
-      pct, line: `Верно: ${hits.length} из ${n} · пропущено: ${missed.length} · лишних: ${extra.length} · ${fmtTime(timer.secs())} · ${stars(pct)}`,
+      pct, line: L(`Верно: ${hits.length} из ${n} · пропущено: ${missed.length} · лишних: ${extra.length}`, `Correct: ${hits.length} of ${n} · missed: ${missed.length} · wrong picks: ${extra.length}`) + ` · ${fmtTime(timer.secs())} · ${stars(pct)}`,
       mistakes,
-      legend: `<div class="legend"><span><i style="background:var(--c-ok1)"></i>верно</span><span><i style="background:var(--c-ok3)"></i>пропущено</span><span><i style="background:var(--c-fail)"></i>лишнее</span></div>`,
+      legend: `<div class="legend"><span><i style="background:var(--c-ok1)"></i>${L('верно', 'correct')}</span><span><i style="background:var(--c-ok3)"></i>${L('пропущено', 'missed')}</span><span><i style="background:var(--c-fail)"></i>${L('лишнее', 'wrong pick')}</span></div>`,
       onRetry: () => replace(playSelect, cfg),
       onChip: k => { map.focus(k, true, { frac: 0.25, pointZoom: 4 }); map.flash(k, 'blink', 2000); },
     });
@@ -1495,7 +2139,7 @@ function playChoose(cfg) {
     map.add(it.key, 'hl');
     map.focus(it.key, true, { frac: 0.35, pointZoom: cfg.pins ? 4 : 7 });
     const opts = cfg.fixedOptions || it.options;
-    ui.panel.innerHTML = `<div class="opts">${opts.map(o => `<button class="opt">${esc(o)}</button>`).join('')}</div><div class="feedback">&nbsp;</div><div class="btnrow" hidden><button class="btn">Далее</button></div>`;
+    ui.panel.innerHTML = `<div class="opts">${opts.map(o => `<button class="opt">${esc(o)}</button>`).join('')}</div><div class="feedback">&nbsp;</div><div class="btnrow" hidden><button class="btn">${L('Далее', 'Next')}</button></div>`;
     ui.panel.querySelectorAll('.opt').forEach(b => { b.onclick = () => answer(b); });
     ui.panel.querySelector('.btnrow .btn').onclick = () => { i++; ask(); };
   }
@@ -1511,20 +2155,20 @@ function playChoose(cfg) {
     if (ok) right++; else { wrong.push(it); buzz(); }
     const fb = ui.panel.querySelector('.feedback');
     const extra = it.info && it.info !== it.correct ? esc(it.info) : '';
-    fb.innerHTML = (ok ? '<b class="good">Верно!</b> ' : `<b class="bad">Неверно.</b> Правильно: <b>${esc(it.correct)}</b>. `) + extra;
+    fb.innerHTML = (ok ? `<b class="good">${L('Верно!', 'Correct!')}</b> ` : `<b class="bad">${L('Неверно.', 'Wrong.')}</b> ${L('Правильно', 'Correct answer')}: <b>${esc(it.correct)}</b>. `) + extra;
     ui.panel.querySelector('.btnrow').hidden = false;
     if (ok) advanceT = setTimeout(() => { if (answered && items[i] === it) { i++; ask(); } }, 1600);
   }
   function finish() {
     done = true; timer.stop(); map.removeAll('hl');
     const pct = Math.round(right / items.length * 100);
-    saveBest(cfg.id, pct, timer.secs(), cfg.title + ' — ' + (cfg.modeLabel || 'выбери ответ'));
+    saveBest(cfg.id, pct, timer.secs(), cfg.title + ' — ' + (cfg.modeLabel || L('выбери ответ', 'multiple choice')));
     map.home();
     inlineResult(ui, {
-      pct, line: `Верно: ${right} из ${items.length} · ${fmtTime(timer.secs())} · ${stars(pct)}`,
+      pct, line: `${L('Верно', 'Correct')}: ${right} ${L('из', 'of')} ${items.length} · ${fmtTime(timer.secs())} · ${stars(pct)}`,
       mistakes: wrong.map(it => ({ key: it.key, name: cfg.nameOf ? cfg.nameOf(it.key) : nameOf(it.key), note: it.correct })),
       onRetry: () => replace(playChoose, Object.assign({}, cfg, { items: cfg.regen ? cfg.regen() : shuffle(items) })),
-      onRetryWrong: wrong.length ? () => replace(playChoose, Object.assign({}, cfg, { items: shuffle(wrong), id: null, regen: null, title: cfg.title + ' — ошибки' })) : null,
+      onRetryWrong: wrong.length ? () => replace(playChoose, Object.assign({}, cfg, { items: shuffle(wrong), id: null, regen: null, title: cfg.title + L(' — ошибки', ' — mistakes') })) : null,
       onChip: k => { map.focus(k, true, { frac: 0.25, pointZoom: 4 }); map.flash(k, 'blink', 2000); },
     });
   }
@@ -1537,7 +2181,9 @@ function playChoose(cfg) {
 function playStudy(cfg) {
   const ui = gameShell(cfg.title, false);
   const nm = cfg.nameOf || nameOf;
-  const hint = cfg.pins ? 'Нажмите на точку пролива или приблизьте карту, чтобы увидеть подписи' : 'Нажмите на страну, чтобы узнать подробности';
+  const hint = cfg.pins
+    ? L('Нажмите на точку пролива или приблизьте карту, чтобы увидеть подписи', 'Tap a strait marker, or zoom in to see the labels')
+    : L('Нажмите на страну, чтобы узнать подробности', 'Tap a country to see details');
   ui.prompt.innerHTML = `<span class="sub">${hint}</span>`;
   const legend = cfg.groups && cfg.groups.length > 1 ? `<div class="legend">${cfg.groups.map(g => `<span><i style="background:${g.color}"></i>${esc(g.label)} (${g.keys.length})</span>`).join('')}</div>` : '';
   const chips = cfg.chips || [];
@@ -1557,23 +2203,33 @@ function playStudy(cfg) {
 
 // ===================== Главный экран =====================
 function Home() {
-  app.innerHTML = `<header class="topbar"><div class="title" style="text-align:center">🌍 ГеоТренажёр</div></header>
+  app.innerHTML = `<header class="topbar home-bar"><div class="title">🌍 ${L('ГеоТренажёр', 'GeoTrainer')}</div>
+    <div class="lang-switch" role="group" aria-label="${L('Язык', 'Language')}">
+      <button data-lang="ru" aria-pressed="${LANG === 'ru'}">RU</button><button data-lang="en" aria-pressed="${LANG === 'en'}">EN</button>
+    </div></header>
   <div class="page"><div class="wrap">
-    <div class="hero"><h1>Политическая карта мира</h1><p>Тренажёр к зачёту и экзамену по экономической и политической географии</p></div>
+    <div class="hero"><h1>${L('Политическая карта мира', 'Political Map of the World')}</h1><p>${L('Тренажёр к зачёту и экзамену по экономической и политической географии', 'Practice for your economic and political geography exam')}</p></div>
     <div class="grid">
-      <button class="tile" data-go="orgs"><span class="ico">🤝</span><b>Международные организации</b><small>ЕС, НАТО, АСЕАН, БРИКС, ОПЕК, ШОС и др. — найди страны-участницы</small></button>
-      <button class="tile" data-go="gov"><span class="ico">👑</span><b>Формы правления</b><small>Монархия или республика — выучи по карте</small></button>
-      <button class="tile" data-go="fed"><span class="ico">🏛️</span><b>Федерации</b><small>Федеративное или унитарное устройство</small></button>
-      <button class="tile" data-go="straits"><span class="ico">🌊</span><b>Проливы</b><small>${STRAITS.length} проливов мира: найди на карте</small></button>
-      <button class="tile" data-go="regions"><span class="ico">🗺️</span><b>Регионы и страны</b><small>Регионы из билетов и части света</small></button>
-      <button class="tile" data-go="quiz"><span class="ico">📝</span><b>Викторина по билетам</b><small>${QUIZ.length} вопросов с вариантами ответов по 25 темам</small></button>
-      <button class="tile" data-go="guess"><span class="ico">🧩</span><b>Угадай организацию</b><small>На карте выделены участники — назовите объединение</small></button>
-      <button class="tile" data-go="stats"><span class="ico">🏆</span><b>Мои результаты</b><small>Лучшие результаты во всех режимах</small></button>
+      <button class="tile" data-go="orgs"><span class="ico">🤝</span><b>${L('Международные организации', 'International organizations')}</b><small>${L('ЕС, НАТО, АСЕАН, БРИКС, ОПЕК, ШОС и др. — найди страны-участницы', 'EU, NATO, ASEAN, BRICS, OPEC, SCO and more — find the member states')}</small></button>
+      <button class="tile" data-go="gov"><span class="ico">👑</span><b>${L('Формы правления', 'Forms of government')}</b><small>${L('Монархия или республика — выучи по карте', 'Monarchy or republic — learn them on the map')}</small></button>
+      <button class="tile" data-go="fed"><span class="ico">🏛️</span><b>${L('Федерации', 'Federations')}</b><small>${L('Федеративное или унитарное устройство', 'Federal or unitary state')}</small></button>
+      <button class="tile" data-go="straits"><span class="ico">🌊</span><b>${L('Проливы', 'Straits')}</b><small>${L(`${STRAITS.length} проливов мира: найди на карте`, `${STRAITS.length} of the world’s straits: find them on the map`)}</small></button>
+      <button class="tile" data-go="regions"><span class="ico">🗺️</span><b>${L('Регионы и страны', 'Regions and countries')}</b><small>${L('Регионы из билетов и части света', 'Exam regions and continents')}</small></button>
+      <button class="tile" data-go="quiz"><span class="ico">📝</span><b>${L('Викторина по билетам', 'Exam quiz')}</b><small>${L(`${QUIZ.length} вопросов с вариантами ответов по 25 темам`, `${QUIZ.length} multiple-choice questions on 25 topics`)}</small></button>
+      <button class="tile" data-go="guess"><span class="ico">🧩</span><b>${L('Угадай организацию', 'Guess the organization')}</b><small>${L('На карте выделены участники — назовите объединение', 'Members are highlighted on the map — name the group')}</small></button>
+      <button class="tile" data-go="stats"><span class="ico">🏆</span><b>${L('Мои результаты', 'My results')}</b><small>${L('Лучшие результаты во всех режимах', 'Your best scores in every mode')}</small></button>
     </div>
-    <p class="note" style="text-align:center;margin-top:22px">Карта: приближайте колёсиком мыши или двумя пальцами, перемещайте перетаскиванием. Маленькие государства показаны кружками.</p>
+    <p class="note" style="text-align:center;margin-top:22px">${L('Карта: приближайте колёсиком мыши или двумя пальцами, перемещайте перетаскиванием. Маленькие государства показаны кружками.', 'Map: zoom with the mouse wheel or two fingers, drag to pan. Very small states are shown as circles.')}</p>
   </div></div>`;
   const routes = { guess: GuessMenu, stats: Stats, orgs: OrgList, gov: () => GovMenu('gov'), fed: () => GovMenu('fed'), straits: StraitMenu, regions: RegionList, quiz: QuizMenu };
   app.querySelectorAll('[data-go]').forEach(b => { b.onclick = () => go(routes[b.dataset.go]); });
+  app.querySelectorAll('[data-lang]').forEach(b => {
+    b.onclick = () => {
+      if (LANG === b.dataset.lang) return;
+      LANG = b.dataset.lang; store.set('lang', LANG); applyLang();
+      show(Home);
+    };
+  });
 }
 
 // ===================== Организации и регионы =====================
@@ -1584,22 +2240,22 @@ function setRows(list, kind) {
   }).join('');
 }
 function OrgList() {
-  const sets = ORGS.map(o => Object.assign({}, o, { keys: keysOf(o.members) }));
+  const sets = ORGS.map(o => Object.assign({}, o, { short: orgShort(o), name: orgName(o), info: orgInfo(o), keys: keysOf(o.members) }));
   const main = sets.filter(s => !s.other), other = sets.filter(s => s.other);
-  app.innerHTML = `${topbar('Международные организации')}<div class="page"><div class="wrap">
-    <div class="section-title">Основные</div><div class="list" id="l1">${setRows(main, 'org')}</div>
-    <div class="section-title">Другие объединения</div><div class="list" id="l2">${setRows(other, 'org')}</div>
+  app.innerHTML = `${topbar(L('Международные организации', 'International organizations'))}<div class="page"><div class="wrap">
+    <div class="section-title">${L('Основные', 'Main')}</div><div class="list" id="l1">${setRows(main, 'org')}</div>
+    <div class="section-title">${L('Другие объединения', 'Other groupings')}</div><div class="list" id="l2">${setRows(other, 'org')}</div>
   </div></div>`;
   bindBack();
   $('#l1').querySelectorAll('.row').forEach(r => { r.onclick = () => go(SetMenu, { kind: 'org', set: main[+r.dataset.i] }); });
   $('#l2').querySelectorAll('.row').forEach(r => { r.onclick = () => go(SetMenu, { kind: 'org', set: other[+r.dataset.i] }); });
 }
 function RegionList() {
-  const regs = REGIONS.map(r => Object.assign({}, r, { keys: keysOf(r.members), name: r.short, short: 'Билет ' + r.ticket }));
-  const conts = REGION_FILTERS.map(r => ({ id: 'cont-' + r.id, short: r.label, name: r.id === 'ALL' ? 'Все страны мира' : 'Все страны: ' + r.label.toLowerCase(), keys: regionKeys(r), view: r.view, center: r.center }));
-  app.innerHTML = `${topbar('Регионы и страны')}<div class="page"><div class="wrap">
-    <div class="section-title">Регионы из экзаменационных билетов</div><div class="list" id="l1">${setRows(regs, 'reg')}</div>
-    <div class="section-title">Части света (члены ООН)</div><div class="list" id="l2">${setRows(conts, 'reg')}</div>
+  const regs = REGIONS.map(r => Object.assign({}, r, { keys: keysOf(r.members), name: L(r.short, REGIONS_EN[r.id]), short: L('Билет ', 'Topic ') + r.ticket }));
+  const conts = REGION_FILTERS.map(r => ({ id: 'cont-' + r.id, short: rLabel(r), name: r.id === 'ALL' ? L('Все страны мира', 'All countries of the world') : L('Все страны: ' + r.ru.toLowerCase(), 'All countries: ' + r.en), keys: regionKeys(r), view: r.view, center: r.center }));
+  app.innerHTML = `${topbar(L('Регионы и страны', 'Regions and countries'))}<div class="page"><div class="wrap">
+    <div class="section-title">${L('Регионы из экзаменационных билетов', 'Regions from the exam topics')}</div><div class="list" id="l1">${setRows(regs, 'reg')}</div>
+    <div class="section-title">${L('Части света (члены ООН)', 'Continents (UN members)')}</div><div class="list" id="l2">${setRows(conts, 'reg')}</div>
   </div></div>`;
   bindBack();
   $('#l1').querySelectorAll('.row').forEach(r => { r.onclick = () => go(SetMenu, { kind: 'reg', set: regs[+r.dataset.i] }); });
@@ -1608,7 +2264,7 @@ function RegionList() {
 function SetMenu({ kind, set }) {
   const title = kind === 'org' ? set.short : set.name;
   const idb = `${kind}:${set.id}`;
-  const names = set.keys.map(nameOf).sort((a, b) => a.localeCompare(b, 'ru'));
+  const names = set.keys.map(nameOf).sort(cmp);
   app.innerHTML = `${topbar(title)}<div class="page"><div class="wrap">
     <div class="info-card">
       <p><b>${esc(set.name || set.short)}</b></p>
@@ -1616,18 +2272,19 @@ function SetMenu({ kind, set }) {
       <p class="members"><b>${countries(set.keys.length)}:</b> ${esc(names.join(', '))}</p>
     </div>
     <div class="modes">
-      <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>Изучить на карте</div><small>Страны выделены цветом, нажмите для подписи</small></span></button>
-      <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>Найди страну</div><small>Называется страна — нажмите на неё на карте</small></span><span class="best">${best(idb + ':find')}</span></button>
-      <button class="mode" data-m="select"><span class="ico">✅</span><span class="txt"><div>Отметь всех участников</div><small>Отметьте все страны сами, затем проверьте</small></span><span class="best">${best(idb + ':select')}</span></button>
+      <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить на карте', 'Study the map')}</div><small>${L('Страны выделены цветом, нажмите для подписи', 'Countries are highlighted; tap one to see its name')}</small></span></button>
+      <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди страну', 'Find the country')}</div><small>${L('Называется страна — нажмите на неё на карте', 'A country is named — tap it on the map')}</small></span><span class="best">${best(idb + ':find')}</span></button>
+      <button class="mode" data-m="select"><span class="ico">✅</span><span class="txt"><div>${L('Отметь всех участников', 'Select all members')}</div><small>${L('Отметьте все страны сами, затем проверьте', 'Mark every country yourself, then check')}</small></span><span class="best">${best(idb + ':select')}</span></button>
     </div>
   </div></div>`;
   bindBack();
   const scope = new Set(set.keys);
   const base = { view: set.view, center: set.center || 0 };
   const acts = {
-    study: () => go(playStudy, Object.assign({ title, scope, infoOf: countryInfo, chips: set.keys.slice().sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'ru')), groups: [{ cls: 'sel', keys: set.keys, label: title, color: 'var(--c-sel)' }] }, base)),
+    study: () => go(playStudy, Object.assign({ title, scope, infoOf: countryInfo, chips: set.keys.slice().sort(byName), groups: [{ cls: 'sel', keys: set.keys, label: title, color: 'var(--c-sel)' }] }, base)),
     find: () => go(playFind, Object.assign({ id: idb + ':find', title, keys: set.keys, infoOf: countryInfo }, base)),
-    select: () => go(playSelect, Object.assign({ id: idb + ':select', title, keys: set.keys, what: kind === 'org' ? `страны — участницы «${set.short}»` : `страны региона «${set.name}»`, infoOf: countryInfo }, base)),
+    select: () => go(playSelect, Object.assign({ id: idb + ':select', title, keys: set.keys,
+      what: kind === 'org' ? L(`страны — участницы «${set.short}»`, `member states of ${set.short}`) : L(`страны региона «${set.name}»`, `countries of ${set.name}`), infoOf: countryInfo }, base)),
   };
   app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
 }
@@ -1636,27 +2293,29 @@ function SetMenu({ kind, set }) {
 const govState = { region: 'ALL', count: 20 };
 function GovMenu(kind) {
   const isGov = kind === 'gov';
-  const title = isGov ? 'Формы правления' : 'Федерации';
   const render = () => {
+    const title = isGov ? L('Формы правления', 'Forms of government') : L('Федерации', 'Federations');
     const reg = REGION_FILTERS.find(r => r.id === govState.region);
     const keys = regionKeys(reg);
     const special = keys.filter(k => isGov ? govOf(k) !== 'rep' : isFed(k));
     const idb = `${kind}:${reg.id}`;
     app.innerHTML = `${topbar(title)}<div class="page"><div class="wrap">
       <div class="info-card">${isGov
-        ? `<p><b>Монархия</b> — власть главы государства передаётся по наследству (абсолютная, конституционная, теократическая). <b>Республика</b> — органы власти избираются.</p><p class="members">В мире 43 монархии; из них 15 — королевства Содружества, где глава государства — британский монарх.</p>`
-        : `<p><b>Федерация</b> — государство, состоящее из субъектов с собственными органами власти и законодательством. <b>Унитарное государство</b> — единое государство, делящееся на административные единицы.</p><p class="members">В мире около 28 федераций.</p>`}
+        ? L(`<p><b>Монархия</b> — власть главы государства передаётся по наследству (абсолютная, конституционная, теократическая). <b>Республика</b> — органы власти избираются.</p><p class="members">В мире 43 монархии; из них 15 — королевства Содружества, где глава государства — британский монарх.</p>`,
+            `<p>In a <b>monarchy</b> the head of state inherits power (absolute, constitutional or theocratic monarchy). In a <b>republic</b> the organs of power are elected.</p><p class="members">There are 43 monarchies in the world; 15 of them are Commonwealth realms whose head of state is the British monarch.</p>`)
+        : L(`<p><b>Федерация</b> — государство, состоящее из субъектов с собственными органами власти и законодательством. <b>Унитарное государство</b> — единое государство, делящееся на административные единицы.</p><p class="members">В мире около 28 федераций.</p>`,
+            `<p>A <b>federation</b> is a state made up of constituent units with their own government and laws. A <b>unitary state</b> is a single state divided into administrative units.</p><p class="members">There are about 28 federations in the world.</p>`)}
       </div>
-      <div class="section-title">Регион</div>
-      <div class="chips" id="reg">${REGION_FILTERS.map(r => `<button class="chip ${r.id === govState.region ? 'on' : ''}" data-r="${r.id}">${r.label}</button>`).join('')}</div>
-      <p class="note">${countries(keys.length)}, из них ${isGov ? 'монархий' : 'федераций'}: ${special.length}</p>
-      <div class="section-title">Количество вопросов (режим «Определи»)</div>
-      <div class="chips" id="cnt">${[10, 20, 40, 0].map(c => `<button class="chip ${c === govState.count ? 'on' : ''}" data-c="${c}">${c || 'Все'}</button>`).join('')}</div>
+      <div class="section-title">${L('Регион', 'Region')}</div>
+      <div class="chips" id="reg">${REGION_FILTERS.map(r => `<button class="chip ${r.id === govState.region ? 'on' : ''}" data-r="${r.id}">${rLabel(r)}</button>`).join('')}</div>
+      <p class="note">${countries(keys.length)}${L(', из них ', '; ')}${isGov ? L('монархий', 'monarchies') : L('федераций', 'federations')}: ${special.length}</p>
+      <div class="section-title">${L('Количество вопросов (режим «Определи»)', 'Number of questions (“Identify” mode)')}</div>
+      <div class="chips" id="cnt">${[10, 20, 40, 0].map(c => `<button class="chip ${c === govState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All')}</button>`).join('')}</div>
       <div class="modes">
-        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>Изучить карту</div><small>${isGov ? 'Цвет страны = форма правления' : 'Федерации выделены цветом'}</small></span></button>
-        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${isGov ? 'Определи форму правления' : 'Федерация или унитарное?'}</div><small>Страна подсвечена на карте — выберите ответ</small></span><span class="best">${best(idb + ':choose:' + govState.count)}</span></button>
-        <button class="mode" data-m="select"><span class="ico">✅</span><span class="txt"><div>Отметь все ${isGov ? 'монархии' : 'федерации'}</div><small>Найдите их на карте сами, затем проверьте</small></span><span class="best">${best(idb + ':select')}</span></button>
-        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>Найди ${isGov ? 'монархию' : 'федерацию'}</div><small>Называется страна — нажмите на неё на карте</small></span><span class="best">${best(idb + ':find')}</span></button>
+        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${isGov ? L('Цвет страны = форма правления', 'Colour = form of government') : L('Федерации выделены цветом', 'Federations are highlighted')}</small></span></button>
+        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${isGov ? L('Определи форму правления', 'Identify the form of government') : L('Федерация или унитарное?', 'Federal or unitary?')}</div><small>${L('Страна подсвечена на карте — выберите ответ', 'A country is highlighted — pick the answer')}</small></span><span class="best">${best(idb + ':choose:' + govState.count)}</span></button>
+        <button class="mode" data-m="select"><span class="ico">✅</span><span class="txt"><div>${isGov ? L('Отметь все монархии', 'Select all monarchies') : L('Отметь все федерации', 'Select all federations')}</div><small>${L('Найдите их на карте сами, затем проверьте', 'Find them on the map yourself, then check')}</small></span><span class="best">${best(idb + ':select')}</span></button>
+        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${isGov ? L('Найди монархию', 'Find the monarchy') : L('Найди федерацию', 'Find the federation')}</div><small>${L('Называется страна — нажмите на неё на карте', 'A country is named — tap it on the map')}</small></span><span class="best">${best(idb + ':find')}</span></button>
       </div>
     </div></div>`;
     bindBack();
@@ -1675,24 +2334,24 @@ function GovMenu(kind) {
       }
       return chosen.map(k => ({
         key: k,
-        q: `${isGov ? 'Форма правления' : 'Государственное устройство'}: <b>${esc(nameOf(k))}</b>`,
-        correct: isGov ? GOV_TYPES[govOf(k)].label : (isFed(k) ? 'Федерация' : 'Унитарное государство'),
+        q: `${isGov ? L('Форма правления', 'Form of government') : L('Государственное устройство', 'Territorial structure')}: <b>${esc(nameOf(k))}</b>`,
+        correct: isGov ? govLabel(govOf(k)) : (isFed(k) ? fedLabel() : uniLabel()),
         info: infoOf(k),
       }));
     };
     const acts = {
       study: () => {
         const groups = isGov
-          ? Object.entries(GOV_TYPES).map(([t, g]) => ({ cls: 'g-' + t, label: g.label, color: g.color, keys: keys.filter(k => govOf(k) === t) }))
-          : [{ cls: 'g-fed', label: 'Федерация', color: '#3aa57a', keys: special }, { cls: 'g-uni', label: 'Унитарное', color: '#cfd8e3', keys: keys.filter(k => !isFed(k)) }];
-        go(playStudy, Object.assign({ title, scope, groups, infoOf, chips: special.slice().sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'ru')) }, base));
+          ? Object.entries(GOV_TYPES).map(([t, g]) => ({ cls: 'g-' + t, label: govLabel(t), color: g.color, keys: keys.filter(k => govOf(k) === t) }))
+          : [{ cls: 'g-fed', label: fedLabel(), color: '#3aa57a', keys: special }, { cls: 'g-uni', label: L('Унитарное', 'Unitary'), color: '#cfd8e3', keys: keys.filter(k => !isFed(k)) }];
+        go(playStudy, Object.assign({ title, scope, groups, infoOf, chips: special.slice().sort(byName) }, base));
       },
       choose: () => go(playChoose, Object.assign({
         id: idb + ':choose:' + govState.count, title, nameOf, items: makeItems(), regen: makeItems,
-        fixedOptions: isGov ? Object.values(GOV_TYPES).map(g => g.label) : ['Федерация', 'Унитарное государство'],
+        fixedOptions: isGov ? Object.keys(GOV_TYPES).map(govLabel) : [fedLabel(), uniLabel()],
       }, base)),
-      select: () => go(playSelect, Object.assign({ id: idb + ':select', title, keys: special, what: isGov ? 'монархии' : 'федерации', infoOf }, base)),
-      find: () => go(playFind, Object.assign({ id: idb + ':find', title, keys: special, verb: isGov ? 'Найдите монархию' : 'Найдите федерацию', infoOf }, base)),
+      select: () => go(playSelect, Object.assign({ id: idb + ':select', title, keys: special, what: isGov ? L('монархии', 'monarchies') : L('федерации', 'federations'), infoOf }, base)),
+      find: () => go(playFind, Object.assign({ id: idb + ':find', title, keys: special, verb: isGov ? L('Найдите монархию', 'Find the monarchy') : L('Найдите федерацию', 'Find the federation'), infoOf }, base)),
     };
     app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
   };
@@ -1703,27 +2362,29 @@ function GovMenu(kind) {
 const straitState = { count: 15 };
 function StraitMenu() {
   const render = () => {
-    app.innerHTML = `${topbar('Проливы')}<div class="page"><div class="wrap">
-      <div class="info-card"><p>${STRAITS.length} важнейших проливов мира. После каждого ответа показывается, какие моря (океаны) пролив соединяет и какие территории разделяет.</p></div>
-      <div class="section-title">Количество вопросов</div>
-      <div class="chips">${[10, 15, 30, 0].map(c => `<button class="chip ${c === straitState.count ? 'on' : ''}" data-c="${c}">${c || 'Все'}</button>`).join('')}</div>
+    const title = L('Проливы', 'Straits');
+    const pins = straitPins();
+    app.innerHTML = `${topbar(title)}<div class="page"><div class="wrap">
+      <div class="info-card"><p>${L(`${STRAITS.length} важнейших проливов мира. После каждого ответа показывается, какие моря (океаны) пролив соединяет и какие территории разделяет.`, `The world’s ${STRAITS.length} most important straits. After each answer you’ll see which seas (oceans) the strait connects and which lands it separates.`)}</p></div>
+      <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
+      <div class="chips">${[10, 15, 30, 0].map(c => `<button class="chip ${c === straitState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All')}</button>`).join('')}</div>
       <div class="modes">
-        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>Изучить карту</div><small>Все проливы с подписями</small></span></button>
-        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>Найди пролив</div><small>Называется пролив — нажмите на нужную точку</small></span><span class="best">${best('str:find:' + straitState.count)}</span></button>
-        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>Как называется пролив?</div><small>Точка подсвечена — выберите название из 4 вариантов</small></span><span class="best">${best('str:choose:' + straitState.count)}</span></button>
+        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Все проливы с подписями', 'All straits with labels')}</small></span></button>
+        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди пролив', 'Find the strait')}</div><small>${L('Называется пролив — нажмите на нужную точку', 'A strait is named — tap its marker')}</small></span><span class="best">${best('str:find:' + straitState.count)}</span></button>
+        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${L('Как называется пролив?', 'Name the strait')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('str:choose:' + straitState.count)}</span></button>
       </div>
     </div></div>`;
     bindBack();
     app.querySelectorAll('[data-c]').forEach(b => { b.onclick = () => { straitState.count = +b.dataset.c; render(); }; });
-    const pick = () => { const all = STRAIT_PINS.map(p => p.key); return straitState.count ? sample(all, straitState.count) : shuffle(all); };
+    const pick = () => { const all = pins.map(p => p.key); return straitState.count ? sample(all, straitState.count) : shuffle(all); };
     const makeItems = () => pick().map(k => {
-      const wrong = sample(STRAIT_PINS.filter(p => p.key !== k).map(p => p.label), 3);
-      return { key: k, q: 'Как называется этот пролив?', correct: straitName(k), options: shuffle([straitName(k), ...wrong]), info: straitInfo(k) };
+      const wrong = sample(pins.filter(p => p.key !== k).map(p => p.label), 3);
+      return { key: k, q: L('Как называется этот пролив?', 'What is this strait called?'), correct: straitName(k), options: shuffle([straitName(k), ...wrong]), info: straitInfo(k) };
     });
     const acts = {
-      study: () => go(playStudy, { title: 'Проливы', pins: STRAIT_PINS, labels: true, nameOf: straitName, infoOf: straitInfo, chips: STRAIT_PINS.map(p => p.key) }),
-      find: () => go(playFind, { id: 'str:find:' + straitState.count, title: 'Проливы', keys: pick(), pins: STRAIT_PINS, nameOf: straitName, infoOf: straitInfo, verb: 'Найдите пролив' }),
-      choose: () => go(playChoose, { id: 'str:choose:' + straitState.count, title: 'Проливы', pins: STRAIT_PINS, nameOf: straitName, items: makeItems(), regen: makeItems }),
+      study: () => go(playStudy, { title, pins, labels: true, nameOf: straitName, infoOf: straitInfo, chips: pins.map(p => p.key) }),
+      find: () => go(playFind, { id: 'str:find:' + straitState.count, title, keys: pick(), pins, nameOf: straitName, infoOf: straitInfo, verb: L('Найдите пролив', 'Find the strait') }),
+      choose: () => go(playChoose, { id: 'str:choose:' + straitState.count, title, pins, nameOf: straitName, items: makeItems(), regen: makeItems }),
     };
     app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
   };
@@ -1738,14 +2399,15 @@ function QuizMenu() {
   const render = () => {
     const sel = new Set(quizState.topics);
     const avail = QUIZ.filter(q => sel.has(q.t)).length;
-    app.innerHTML = `${topbar('Викторина по билетам')}<div class="page"><div class="wrap">
-      <div class="info-card"><p>Вопросы с вариантами ответов по теоретическим темам экзаменационных билетов. После каждого ответа — пояснение.</p></div>
-      <div class="section-title">Количество вопросов</div>
-      <div class="chips">${[10, 20, 40, 0].map(c => `<button class="chip ${c === quizState.count ? 'on' : ''}" data-c="${c}">${c || 'Все'}</button>`).join('')}</div>
-      <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">Темы
-        <span><button class="chip" data-all="1">Все</button> <button class="chip" data-all="0">Ни одной</button></span></div>
-      <div class="list topic-list">${Object.entries(TOPICS).map(([n, t]) => `<label><input type="checkbox" data-t="${n}" ${sel.has(+n) ? 'checked' : ''}><span class="num">${n}.</span><span>${esc(t)}</span><small>${byTopic[n] || 0}</small></label>`).join('')}</div>
-      <div class="sticky-bottom"><button class="btn" id="start" style="width:100%" ${avail ? '' : 'disabled'}>Начать (${quizState.count ? Math.min(quizState.count, avail) : avail} из ${avail})</button></div>
+    const n = quizState.count ? Math.min(quizState.count, avail) : avail;
+    app.innerHTML = `${topbar(L('Викторина по билетам', 'Exam quiz'))}<div class="page"><div class="wrap">
+      <div class="info-card"><p>${L('Вопросы с вариантами ответов по теоретическим темам экзаменационных билетов. После каждого ответа — пояснение.', 'Multiple-choice questions on the theory topics of the exam. Each answer comes with an explanation.')}</p></div>
+      <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
+      <div class="chips">${[10, 20, 40, 0].map(c => `<button class="chip ${c === quizState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All')}</button>`).join('')}</div>
+      <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">${L('Темы', 'Topics')}
+        <span><button class="chip" data-all="1">${L('Все', 'All')}</button> <button class="chip" data-all="0">${L('Ни одной', 'None')}</button></span></div>
+      <div class="list topic-list">${Object.keys(TOPICS).map(t => `<label><input type="checkbox" id="topic-${t}" data-t="${t}" ${sel.has(+t) ? 'checked' : ''}><span class="num">${t}.</span><span>${esc(topicName(t))}</span><small>${byTopic[t] || 0}</small></label>`).join('')}</div>
+      <div class="sticky-bottom"><button class="btn" id="start" style="width:100%" ${avail ? '' : 'disabled'}>${L(`Начать (${n} из ${avail})`, `Start (${n} of ${avail})`)}</button></div>
     </div></div>`;
     bindBack();
     const save = () => store.set('quizState', quizState);
@@ -1760,27 +2422,29 @@ function QuizMenu() {
       };
     });
     $('#start').onclick = () => {
-      const pool = shuffle(QUIZ.filter(q => sel.has(q.t)));
+      const pool = shuffle(QUIZ.map((q, i) => i).filter(i => sel.has(QUIZ[i].t)));
       go(playQuiz, { qs: quizState.count ? pool.slice(0, quizState.count) : pool });
     };
   };
   render();
 }
-function playQuiz({ qs, title }) {
+// qs — индексы вопросов в QUIZ / QUIZ_EN
+function playQuiz({ qs, retry }) {
   let i = 0, right = 0;
   const log = [];
   const t0 = Date.now();
-  app.innerHTML = `${topbar(title || 'Викторина', '<span class="prog"></span><span class="score"></span>')}<div class="progress"><div></div></div><div class="page"><div class="wrap" id="qw"></div></div>`;
+  const title = retry ? L('Работа над ошибками', 'Review mistakes') : L('Викторина', 'Quiz');
+  app.innerHTML = `${topbar(title, '<span class="prog"></span><span class="score"></span>')}<div class="progress"><div></div></div><div class="page"><div class="wrap" id="qw"></div></div>`;
   bindBack();
   const qw = $('#qw');
   function ask() {
     if (i >= qs.length) return finish();
-    const q = qs[i];
+    const q = quizQ(qs[i]);
     const opts = shuffle([q.a, ...q.w]);
     $('.prog').textContent = `${i + 1}/${qs.length}`;
     $('.score').textContent = `✓ ${right}`;
     $('.progress>div').style.width = (i / qs.length * 100) + '%';
-    qw.innerHTML = `<div class="qcard"><div class="topic">Билет ${q.t} · ${esc(TOPICS[q.t])}</div><h2>${esc(q.q)}</h2>
+    qw.innerHTML = `<div class="qcard"><div class="topic">${L('Билет', 'Topic')} ${q.t} · ${esc(topicName(q.t))}</div><h2>${esc(q.q)}</h2>
       <div class="qopts">${opts.map(o => `<button class="opt">${esc(o)}</button>`).join('')}</div><div id="after"></div></div>`;
     qw.querySelectorAll('.opt').forEach(b => { b.onclick = () => answer(b, q); });
     $('.page').scrollTop = 0;
@@ -1789,10 +2453,10 @@ function playQuiz({ qs, title }) {
     const ok = btn.textContent === q.a;
     qw.querySelectorAll('.opt').forEach(b => { b.disabled = true; if (b.textContent === q.a) b.classList.add('right'); });
     if (!ok) { btn.classList.add('wrong'); buzz(); } else right++;
-    log.push({ q, ok, given: btn.textContent });
+    log.push({ idx: qs[i], ok, given: btn.textContent });
     $('.score').textContent = `✓ ${right}`;
-    $('#after').innerHTML = `<div class="explain">${ok ? '<b style="color:var(--ok)">Верно!</b>' : `<b style="color:var(--bad)">Неверно.</b> Правильный ответ: <b>${esc(q.a)}</b>.`} ${esc(q.e || '')}</div>
-      <div style="margin-top:12px"><button class="btn" style="width:100%" id="next">${i + 1 < qs.length ? 'Далее' : 'Результаты'}</button></div>`;
+    $('#after').innerHTML = `<div class="explain">${ok ? `<b style="color:var(--ok)">${L('Верно!', 'Correct!')}</b>` : `<b style="color:var(--bad)">${L('Неверно.', 'Wrong.')}</b> ${L('Правильный ответ', 'Correct answer')}: <b>${esc(q.a)}</b>.`} ${esc(q.e || '')}</div>
+      <div style="margin-top:12px"><button class="btn" style="width:100%" id="next">${i + 1 < qs.length ? L('Далее', 'Next') : L('Результаты', 'Results')}</button></div>`;
     $('#next').onclick = () => { i++; ask(); };
     $('#next').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
@@ -1801,15 +2465,15 @@ function playQuiz({ qs, title }) {
     const secs = Math.round((Date.now() - t0) / 1000);
     const wrong = log.filter(l => !l.ok);
     $('.progress>div').style.width = '100%';
-    qw.innerHTML = `<div class="result"><div class="score">${pct}%</div><div class="stars">${stars(pct)}</div><div class="sub">Верно ${right} из ${qs.length} · ${fmtTime(secs)}</div></div>
-      <div class="btnrow" style="display:flex;gap:8px;margin:14px 0">
-        <button class="btn ghost" id="menu">Меню</button>
-        ${wrong.length ? '<button class="btn ghost" id="rw">Только ошибки</button>' : ''}
-        <button class="btn" id="again">Ещё раз</button></div>
-      ${wrong.length ? `<div class="section-title">Разбор ошибок</div>${wrong.map(l => `<div class="qcard" style="margin-bottom:10px"><div class="topic">Билет ${l.q.t}</div><p style="margin:0 0 6px;font-weight:600">${esc(l.q.q)}</p><p style="margin:0;color:var(--bad)">Ваш ответ: ${esc(l.given)}</p><p style="margin:0 0 6px;color:var(--ok)">Верно: ${esc(l.q.a)}</p><p style="margin:0;color:var(--muted);font-size:14px">${esc(l.q.e || '')}</p></div>`).join('')}` : '<p class="note" style="text-align:center">Без ошибок — отлично!</p>'}`;
+    qw.innerHTML = `<div class="result"><div class="score">${pct}%</div><div class="stars">${stars(pct)}</div><div class="sub">${L(`Верно ${right} из ${qs.length}`, `${right} of ${qs.length} correct`)} · ${fmtTime(secs)}</div></div>
+      <div class="btnrow" style="margin:14px 0">
+        <button class="btn ghost" id="menu">${L('Меню', 'Menu')}</button>
+        ${wrong.length ? `<button class="btn ghost" id="rw">${L('Только ошибки', 'Mistakes only')}</button>` : ''}
+        <button class="btn" id="again">${L('Ещё раз', 'Play again')}</button></div>
+      ${wrong.length ? `<div class="section-title">${L('Разбор ошибок', 'Review')}</div>${wrong.map(l => { const q = quizQ(l.idx); return `<div class="qcard" style="margin-bottom:10px"><div class="topic">${L('Билет', 'Topic')} ${q.t}</div><p style="margin:0 0 6px;font-weight:600">${esc(q.q)}</p><p style="margin:0;color:var(--bad)">${L('Ваш ответ', 'Your answer')}: ${esc(l.given)}</p><p style="margin:0 0 6px;color:var(--ok)">${L('Верно', 'Correct')}: ${esc(q.a)}</p><p style="margin:0;color:var(--muted);font-size:14px">${esc(q.e || '')}</p></div>`; }).join('')}` : `<p class="note" style="text-align:center">${L('Без ошибок — отлично!', 'No mistakes — excellent!')}</p>`}`;
     $('#menu').onclick = back;
-    $('#again').onclick = () => replace(playQuiz, { qs: shuffle(qs), title });
-    if (wrong.length) $('#rw').onclick = () => replace(playQuiz, { qs: shuffle(wrong.map(l => l.q)), title: 'Работа над ошибками' });
+    $('#again').onclick = () => replace(playQuiz, { qs: shuffle(qs), retry });
+    if (wrong.length) $('#rw').onclick = () => replace(playQuiz, { qs: shuffle(wrong.map(l => l.idx)), retry: true });
     $('.page').scrollTop = 0;
   }
   const onKey = e => {
@@ -1830,13 +2494,13 @@ function GuessMenu() {
   const render = () => {
     const pool = ORGS.filter(o => guessState.other || !o.other);
     const id = 'guess:' + (guessState.other ? 'all' : 'main') + ':' + guessState.count;
-    app.innerHTML = `${topbar('Угадай организацию')}<div class="page"><div class="wrap">
-      <div class="info-card"><p>На карте выделены страны-участницы. Выберите, какое это объединение. Будьте внимательны: составы ЕАЭС, ОДКБ и СНГ похожи.</p></div>
-      <div class="section-title">Количество вопросов</div>
-      <div class="chips">${[10, 20, 0].map(c => `<button class="chip ${c === guessState.count ? 'on' : ''}" data-c="${c}">${c || 'Все (' + pool.length + ')'}</button>`).join('')}</div>
-      <div class="section-title">Какие организации</div>
-      <div class="chips"><button class="chip ${guessState.other ? '' : 'on'}" data-o="0">Только основные (${ORGS.filter(o => !o.other).length})</button><button class="chip ${guessState.other ? 'on' : ''}" data-o="1">Все (${ORGS.length})</button></div>
-      <div class="modes"><button class="mode" id="start"><span class="ico">🧩</span><span class="txt"><div>Начать</div><small>4 варианта ответа, после ответа — справка об организации</small></span><span class="best">${best(id)}</span></button></div>
+    app.innerHTML = `${topbar(L('Угадай организацию', 'Guess the organization'))}<div class="page"><div class="wrap">
+      <div class="info-card"><p>${L('На карте выделены страны-участницы. Выберите, какое это объединение. Будьте внимательны: составы ЕАЭС, ОДКБ и СНГ похожи.', 'The member states are highlighted on the map. Pick which grouping it is. Careful: the EAEU, CSTO and CIS have similar members.')}</p></div>
+      <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
+      <div class="chips">${[10, 20, 0].map(c => `<button class="chip ${c === guessState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All') + ' (' + pool.length + ')'}</button>`).join('')}</div>
+      <div class="section-title">${L('Какие организации', 'Which organizations')}</div>
+      <div class="chips"><button class="chip ${guessState.other ? '' : 'on'}" data-o="0">${L('Только основные', 'Main only')} (${ORGS.filter(o => !o.other).length})</button><button class="chip ${guessState.other ? 'on' : ''}" data-o="1">${L('Все', 'All')} (${ORGS.length})</button></div>
+      <div class="modes"><button class="mode" id="start"><span class="ico">🧩</span><span class="txt"><div>${L('Начать', 'Start')}</div><small>${L('4 варианта ответа, после ответа — справка об организации', '4 options; after each answer you get a short profile of the organization')}</small></span><span class="best">${best(id)}</span></button></div>
     </div></div>`;
     bindBack();
     app.querySelectorAll('[data-c]').forEach(b => { b.onclick = () => { guessState.count = +b.dataset.c; render(); }; });
@@ -1846,13 +2510,13 @@ function GuessMenu() {
   render();
 }
 function playGuess(cfg) {
-  const ui = gameShell('Угадай организацию');
+  const ui = gameShell(L('Угадай организацию', 'Guess the organization'));
   const rounds = (cfg.count ? sample(cfg.pool, cfg.count) : shuffle(cfg.pool)).map(o => {
-    const others = sample(ORGS.filter(x => x !== o), 3).map(x => x.short);
-    return { org: o, keys: keysOf(o.members), options: shuffle([o.short, ...others]) };
+    const others = sample(ORGS.filter(x => x !== o), 3).map(orgShort);
+    return { org: o, keys: keysOf(o.members), options: shuffle([orgShort(o), ...others]) };
   });
   const timer = makeTimer(ui.timerEl);
-  let i = 0, right = 0, answered = false, done = false, map = null;
+  let i = 0, right = 0, answered = false, map = null;
   const wrong = [];
   const resetMap = () => ui.mapEl.querySelectorAll('svg, .map-tip').forEach(n => n.remove());
   function ask() {
@@ -1861,8 +2525,8 @@ function playGuess(cfg) {
     const r = rounds[i];
     ui.prog.textContent = `${i + 1}/${rounds.length}`;
     ui.bar.style.width = (i / rounds.length * 100) + '%';
-    ui.prompt.innerHTML = `Какая это организация? <span class="sub">Выделено: ${countries(r.keys.length)}</span>`;
-    ui.panel.innerHTML = `<div class="opts">${r.options.map(o => `<button class="opt">${esc(o)}</button>`).join('')}</div><div class="feedback">&nbsp;</div><div class="btnrow" hidden><button class="btn">Далее</button></div>`;
+    ui.prompt.innerHTML = `${L('Какая это организация?', 'Which organization is this?')} <span class="sub">${L('Выделено', 'Highlighted')}: ${countries(r.keys.length)}</span>`;
+    ui.panel.innerHTML = `<div class="opts">${r.options.map(o => `<button class="opt">${esc(o)}</button>`).join('')}</div><div class="feedback">&nbsp;</div><div class="btnrow" hidden><button class="btn">${L('Далее', 'Next')}</button></div>`;
     ui.panel.querySelectorAll('.opt').forEach(b => { b.onclick = () => answer(b); });
     ui.panel.querySelector('.btnrow .btn').onclick = () => { i++; ask(); };
     resetMap();
@@ -1872,30 +2536,30 @@ function playGuess(cfg) {
   }
   function answer(btn) {
     if (answered) return; answered = true;
-    const r = rounds[i], ok = btn.textContent === r.org.short;
-    ui.panel.querySelectorAll('.opt').forEach(b => { b.disabled = true; if (b.textContent === r.org.short) b.classList.add('right'); });
+    const r = rounds[i], correct = orgShort(r.org), ok = btn.textContent === correct;
+    ui.panel.querySelectorAll('.opt').forEach(b => { b.disabled = true; if (b.textContent === correct) b.classList.add('right'); });
     if (ok) { right++; r.keys.forEach(k => { map.remove(k, 'sel'); map.add(k, 'ok1'); }); }
     else { btn.classList.add('wrong'); wrong.push(r); buzz(); }
-    ui.panel.querySelector('.feedback').innerHTML = (ok ? '<b class="good">Верно!</b> ' : `<b class="bad">Неверно.</b> Это <b>${esc(r.org.short)}</b>. `) + esc(r.org.name) + '. ' + esc(r.org.info || '');
+    ui.panel.querySelector('.feedback').innerHTML = (ok ? `<b class="good">${L('Верно!', 'Correct!')}</b> ` : `<b class="bad">${L('Неверно.', 'Wrong.')}</b> ${L('Это', 'It’s')} <b>${esc(correct)}</b>. `) + esc(orgName(r.org)) + '. ' + esc(orgInfo(r.org) || '');
     ui.panel.querySelector('.btnrow').hidden = false;
   }
   function finish() {
-    done = true; timer.stop();
+    timer.stop();
     const pct = Math.round(right / rounds.length * 100);
-    saveBest(cfg.id, pct, timer.secs(), 'Угадай организацию — ' + (cfg.count ? cfg.count + ' вопросов' : 'все'));
+    saveBest(cfg.id, pct, timer.secs(), L('Угадай организацию — ', 'Guess the organization — ') + (cfg.count ? L(`${cfg.count} вопросов`, `${cfg.count} questions`) : L('все', 'all')));
     resetMap();
     map = GeoMap(ui.mapEl, { center: 10, onClick: (k, ev) => map.tip(nameOf(k) + ' — ' + countryInfo(k), ev, '', 3200) });
     map.setHome(null); map.fitView(null, false);
     inlineResult(ui, {
-      pct, line: `Верно: ${right} из ${rounds.length} · ${fmtTime(timer.secs())} · ${stars(pct)} · нажмите на страну, чтобы увидеть её организации`,
-      mistakes: wrong.map(r => ({ key: r.org.id, name: r.org.short, note: r.org.name })),
-      mistakesTitle: 'Не угаданы',
+      pct, line: `${L('Верно', 'Correct')}: ${right} ${L('из', 'of')} ${rounds.length} · ${fmtTime(timer.secs())} · ${stars(pct)} · ${L('нажмите на страну, чтобы увидеть её организации', 'tap a country to see its organizations')}`,
+      mistakes: wrong.map(r => ({ key: r.org.id, name: orgShort(r.org), note: orgName(r.org) })),
+      mistakesTitle: L('Не угаданы', 'Missed'),
       onRetry: () => replace(playGuess, cfg),
       onRetryWrong: wrong.length ? () => replace(playGuess, Object.assign({}, cfg, { pool: wrong.map(r => r.org), count: 0, id: null })) : null,
       onChip: id => {
         const o = ORGS.find(x => x.id === id); if (!o) return;
         map.removeAll('sel'); keysOf(o.members).forEach(k => map.add(k, 'sel'));
-        ui.prompt.innerHTML = `<b>${esc(o.short)}</b> <span class="sub">${esc(o.name)} — участники выделены на карте</span>`;
+        ui.prompt.innerHTML = `<b>${esc(orgShort(o))}</b> <span class="sub">${esc(orgName(o))} — ${L('участники выделены на карте', 'members are highlighted on the map')}</span>`;
       },
     });
   }
@@ -1907,15 +2571,15 @@ function playGuess(cfg) {
 function Stats() {
   let confirmReset = false;
   const render = () => {
-    const list = allBest().sort((a, b) => (a.label || a.id).localeCompare(b.label || b.id, 'ru'));
+    const list = allBest().sort((a, b) => cmp(bestLabel(a), bestLabel(b)));
     const avg = list.length ? Math.round(list.reduce((s, x) => s + x.pct, 0) / list.length) : 0;
-    app.innerHTML = `${topbar('Мои результаты')}<div class="page"><div class="wrap">
-      ${list.length ? `<div class="result"><div class="score">${avg}%</div><div class="sub">средний лучший результат · пройдено режимов: ${list.length}</div></div>
-      <div class="list">${list.map(x => `<div class="row"><span class="txt"><div>${esc(x.label || x.id)}</div><small>лучшее время ${fmtTime(x.secs || 0)}</small></span><span class="pill ${x.pct >= 90 ? 'good' : x.pct >= 60 ? 'mid' : 'low'}">${x.pct}%</span></div>`).join('')}</div>
+    app.innerHTML = `${topbar(L('Мои результаты', 'My results'))}<div class="page"><div class="wrap">
+      ${list.length ? `<div class="result"><div class="score">${avg}%</div><div class="sub">${L('средний лучший результат · пройдено режимов', 'average best score · modes played')}: ${list.length}</div></div>
+      <div class="list">${list.map(x => `<div class="row"><span class="txt"><div>${esc(bestLabel(x))}</div><small>${L('лучшее время', 'best time')} ${fmtTime(x.secs || 0)}</small></span><span class="pill ${x.pct >= 90 ? 'good' : x.pct >= 60 ? 'mid' : 'low'}">${x.pct}%</span></div>`).join('')}</div>
       <div style="margin-top:16px">${confirmReset
-        ? `<p class="note">Удалить все результаты на этом устройстве?</p><div class="btnrow"><button class="btn ghost" id="no">Отмена</button><button class="btn danger" id="yes">Удалить</button></div>`
-        : '<button class="btn ghost" id="reset" style="width:100%">Сбросить результаты</button>'}</div>`
-      : '<div class="info-card" style="margin-top:16px"><p>Пока пусто. Пройдите любой режим — лучший результат появится здесь.</p><p class="members">Результаты хранятся только в этом браузере.</p></div>'}
+        ? `<p class="note">${L('Удалить все результаты на этом устройстве?', 'Delete all results on this device?')}</p><div class="btnrow"><button class="btn ghost" id="no">${L('Отмена', 'Cancel')}</button><button class="btn danger" id="yes">${L('Удалить', 'Delete')}</button></div>`
+        : `<button class="btn ghost" id="reset" style="width:100%">${L('Сбросить результаты', 'Reset results')}</button>`}</div>`
+      : `<div class="info-card" style="margin-top:16px"><p>${L('Пока пусто. Пройдите любой режим — лучший результат появится здесь.', 'Nothing here yet. Play any mode and your best score will appear here.')}</p><p class="members">${L('Результаты хранятся только в этом браузере.', 'Results are stored only in this browser.')}</p></div>`}
     </div></div>`;
     bindBack();
     const on = (id, f) => { const el = $('#' + id); if (el) el.onclick = f; };

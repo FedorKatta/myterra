@@ -272,3 +272,9 @@ button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 3px so
   .c.hl, .pin.hl, .c.flash, .c.blink { animation-duration: 0s; }
   .progress > div, .c { transition: none; }
 }
+
+/* ——— Переключатель языка ——— */
+.home-bar .title { text-align: left; }
+.lang-switch { display: flex; flex: none; background: rgba(255,255,255,.15); border-radius: 10px; padding: 3px; gap: 2px; }
+.lang-switch button { border: 0; background: transparent; color: #fff; font-weight: 700; font-size: 13px; letter-spacing: .04em; padding: 6px 10px; border-radius: 7px; min-width: 40px; }
+.lang-switch button[aria-pressed="true"] { background: #fff; color: var(--primary); }
