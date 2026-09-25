@@ -46,7 +46,53 @@ function allBest() {
   return out;
 }
 const bestLabel = x => (x.labels && (x.labels[LANG] || x.labels.ru || x.labels.en)) || x.label || x.id;
-const buzz = () => { try { if (navigator.vibrate) navigator.vibrate(35); } catch (e) { /* нет вибрации */ } };
+const REDUCED = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+// ошибка: короткая вибрация и покачивание строки вопроса
+const buzz = () => {
+  try { if (navigator.vibrate) navigator.vibrate(35); } catch (e) { /* нет вибрации */ }
+  const el = document.querySelector('.prompt') || document.querySelector('.qcard');
+  if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 450); }
+};
+// плавный отсчёт числа (результаты)
+function countUp(el, to, suffix = '') {
+  if (!el) return;
+  if (REDUCED) { el.textContent = to + suffix; return; }
+  const t0 = performance.now(), dur = 850;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = Math.round(to * e) + suffix;
+    if (k < 1 && el.isConnected) requestAnimationFrame(step);
+  };
+  el.textContent = '0' + suffix;
+  requestAnimationFrame(step);
+}
+// Иконки (обводка 1.8, сетка 24×24)
+const ICONS = {
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  minus: '<path d="M5 12h14"/>',
+  reset: '<circle cx="12" cy="12" r="7"/><path d="M12 2.5v4.5M12 17v4.5M2.5 12H7M17 12h4.5"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/>',
+  orgs: '<circle cx="6" cy="7" r="2.6"/><circle cx="18" cy="7" r="2.6"/><circle cx="12" cy="18" r="2.6"/><path d="M8.6 7h6.8M7.3 9.3l3.4 6.4M16.7 9.3l-3.4 6.4"/>',
+  guess: '<path d="M4 7h4.2a2.3 2.3 0 1 1 4.6 0H17v4.2a2.3 2.3 0 1 1 0 4.6V20H4z"/>',
+  gov: '<path d="M4 19h16M5 19 4 8l4.5 3.5L12 5l3.5 6.5L20 8l-1 11"/>',
+  fed: '<path d="M3 20h18M12 3.5 4 8h16zM6 10.5v7M10 10.5v7M14 10.5v7M18 10.5v7"/>',
+  straits: '<path d="M3 9c2 0 2.2-2 4.5-2S10 9 12 9s2.2-2 4.5-2S19 9 21 9M3 15c2 0 2.2-2 4.5-2S10 15 12 15s2.2-2 4.5-2S19 15 21 15"/>',
+  regions: '<path d="M3.5 6.5 9 4.5l6 2 5.5-2v13l-5.5 2-6-2-5.5 2zM9 4.5v13M15 6.5v13"/>',
+  disputes: '<path d="M12 4v15M8 20h8M5.5 7h13M5.5 7 3 12.5a2.6 2.6 0 0 0 5 0zM18.5 7 16 12.5a2.6 2.6 0 0 0 5 0z"/>',
+  resources: '<path d="M7 4h10l3.5 5L12 20 3.5 9zM3.5 9h17M9.5 4 12 20l2.5-16"/>',
+  quiz: '<path d="M7 3.5h7.5L19 8v12.5H7zM14.5 3.5V8H19M10 14l2 2 4-4.5"/>',
+  stats: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5.5a2.5 2.5 0 0 0 2.8 3.6M16 6h2.5a2.5 2.5 0 0 1-2.8 3.6M12 13v4M9 20h6M10 17h4"/>',
+  study: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+  find: '<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+  select: '<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><path d="M8 12.2l2.8 2.8L16.5 9"/>',
+  choose: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1.1.8-1.1 1.6v.5M12 16.8v.1"/>',
+  what: '<path d="M12 4 3 8.5l9 4.5 9-4.5zM3 12.5l9 4.5 9-4.5M3 16.5l9 4.5 9-4.5"/>',
+  leaders: '<path d="M3 20h18M4.5 20v-6h5v6M9.5 20V9.5h5V20M14.5 20v-4h5v4M12 3.3l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z"/>',
+  ctrl: '<path d="M5.5 21V4M5.5 4.5h11l-2.2 4 2.2 4h-11"/>',
+  start: '<path d="M8 5.5v13l10.5-6.5z"/>',
+};
+const icon = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
 const best = id => { const b = store.get('best:' + id); return b ? `${b.pct}%` : ''; };
 
 // ===================== Данные =====================
@@ -157,21 +203,27 @@ const polysOf = (() => {
 
 // ===================== Навигация =====================
 let stack = [], cleanup = null;
-function show(fn, arg) {
+let enterT;
+function show(fn, arg, nav = 'swap') {
   if (cleanup) { try { cleanup(); } catch (e) { /* ignore */ } cleanup = null; }
+  app.classList.remove('enter');
+  app.dataset.nav = nav;
   app.innerHTML = '';
   const r = fn(arg);
   cleanup = typeof r === 'function' ? r : null;
   const page = $('.page'); if (page) page.scrollTop = 0;
+  void app.offsetWidth; // перезапуск анимации появления
+  app.classList.add('enter');
+  clearTimeout(enterT); enterT = setTimeout(() => app.classList.remove('enter'), 1000);
 }
 let histOK = true, skipPop = 0;
 function go(fn, arg) {
   stack.push([fn, arg]);
   if (histOK) { try { history.pushState({ d: stack.length }, ''); } catch (e) { histOK = false; } }
-  show(fn, arg);
+  show(fn, arg, 'fwd');
 }
 function replace(fn, arg) { stack[stack.length - 1] = [fn, arg]; show(fn, arg); }
-function pop() { if (stack.length > 1) { stack.pop(); const [fn, arg] = stack[stack.length - 1]; show(fn, arg); } }
+function pop() { if (stack.length > 1) { stack.pop(); const [fn, arg] = stack[stack.length - 1]; show(fn, arg, 'back'); } }
 function back() {
   if (stack.length <= 1) return;
   pop();
@@ -181,7 +233,7 @@ function back() {
 window.addEventListener('popstate', () => { if (skipPop > 0) { skipPop--; return; } pop(); });
 
 function topbar(title, stats = '') {
-  return `<header class="topbar"><button class="back" aria-label="${L('Назад', 'Back')}">‹</button><div class="title">${esc(title)}</div><div class="stats">${stats}</div></header>`;
+  return `<header class="topbar"><button class="back" aria-label="${L('Назад', 'Back')}">${icon('back')}</button><div class="title">${esc(title)}</div><div class="stats">${stats}</div></header>`;
 }
 function bindBack() { const b = $('.back'); if (b) b.onclick = back; }
 
@@ -363,7 +415,7 @@ function gameShell(title, withTimer = true) {
     ${topbar(title, withTimer ? '<span class="prog"></span><span class="timer">0:00</span>' : '')}
     <div class="progress"><div></div></div>
     <div class="prompt"></div>
-    <div class="mapwrap"><div class="zoombtns"><button data-z="in" aria-label="${L('Приблизить', 'Zoom in')}">+</button><button data-z="out" aria-label="${L('Отдалить', 'Zoom out')}">−</button><button data-z="home" aria-label="${L('Исходный вид', 'Reset view')}">⟲</button></div></div>
+    <div class="mapwrap"><div class="zoombtns"><button data-z="in" aria-label="${L('Приблизить', 'Zoom in')}">${icon('plus')}</button><button data-z="out" aria-label="${L('Отдалить', 'Zoom out')}">${icon('minus')}</button><button data-z="home" aria-label="${L('Исходный вид', 'Reset view')}">${icon('reset')}</button></div></div>
     <div class="panel"></div></div>`;
   bindBack();
   return { prompt: $('.prompt'), mapEl: $('.mapwrap'), panel: $('.panel'), prog: $('.prog'), timerEl: $('.timer'), bar: $('.progress>div') };
@@ -375,10 +427,11 @@ function makeTimer(el) {
   let stopped = null;
   return { secs: () => stopped ?? secs(), stop() { clearInterval(id); if (stopped == null) stopped = secs(); } };
 }
-function stars(pct) { const n = pct >= 95 ? 3 : pct >= 75 ? 2 : pct >= 50 ? 1 : 0; return '★'.repeat(n) + '☆'.repeat(3 - n); }
+function stars(pct) { const n = pct >= 95 ? 3 : pct >= 75 ? 2 : pct >= 50 ? 1 : 0; return '<span>★</span>'.repeat(n) + '<span>☆</span>'.repeat(3 - n); }
 function inlineResult(ui, r) {
   ui.bar.style.width = '100%';
   ui.prompt.innerHTML = `${L('Результат', 'Score')}: <b>${r.pct}%</b> <span class="sub">${r.line}</span>`;
+  countUp(ui.prompt.querySelector('b'), r.pct, '%');
   const list = r.mistakes && r.mistakes.length
     ? `<details style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:600">${r.mistakesTitle || L('Ошибки', 'Mistakes')} (${r.mistakes.length})</summary><div class="namechips" style="margin-top:6px">${r.mistakes.map(m => `<button data-k="${esc(m.key)}">${esc(m.name)}${m.note ? ' · ' + esc(m.note) : ''}</button>`).join('')}</div></details>`
     : '';
@@ -595,36 +648,156 @@ function playStudy(cfg) {
 }
 
 // ===================== Главный экран =====================
+const ruN = (n, a, b, c) => `${n} ${pluralRu(n, a, b, c)}`;
 function Home() {
-  app.innerHTML = `<header class="topbar home-bar"><div class="title">🌍 ${L('ГеоТренажёр', 'GeoTrainer')}</div>
-    <div class="lang-switch" role="group" aria-label="${L('Язык', 'Language')}">
-      <button data-lang="ru" aria-pressed="${LANG === 'ru'}">RU</button><button data-lang="en" aria-pressed="${LANG === 'en'}">EN</button>
-    </div></header>
-  <div class="page"><div class="wrap">
-    <div class="hero"><h1>${L('Политическая карта мира', 'Political Map of the World')}</h1><p>${L('Тренажёр к зачёту и экзамену по экономической и политической географии', 'Practice for your economic and political geography exam')}</p></div>
-    <div class="grid">
-      <button class="tile" data-go="orgs"><span class="ico">🤝</span><b>${L('Международные организации', 'International organizations')}</b><small>${L('ЕС, НАТО, АСЕАН, БРИКС, ОПЕК, ШОС и др. — найди страны-участницы', 'EU, NATO, ASEAN, BRICS, OPEC, SCO and more — find the member states')}</small></button>
-      <button class="tile" data-go="gov"><span class="ico">👑</span><b>${L('Формы правления', 'Forms of government')}</b><small>${L('Монархия или республика — выучи по карте', 'Monarchy or republic — learn them on the map')}</small></button>
-      <button class="tile" data-go="fed"><span class="ico">🏛️</span><b>${L('Федерации', 'Federations')}</b><small>${L('Федеративное или унитарное устройство', 'Federal or unitary state')}</small></button>
-      <button class="tile" data-go="straits"><span class="ico">🌊</span><b>${L('Проливы', 'Straits')}</b><small>${L(`${STRAITS.length} проливов мира: найди на карте`, `${STRAITS.length} of the world’s straits: find them on the map`)}</small></button>
-      <button class="tile" data-go="regions"><span class="ico">🗺️</span><b>${L('Регионы и страны', 'Regions and countries')}</b><small>${L('Регионы из билетов и части света', 'Exam regions and continents')}</small></button>
-      <button class="tile" data-go="guess"><span class="ico">🧩</span><b>${L('Угадай организацию', 'Guess the organization')}</b><small>${L('На карте выделены участники — назовите объединение', 'Members are highlighted on the map — name the group')}</small></button>
-      <button class="tile" data-go="resources"><span class="ico">⛏️</span><b>${L('Природные ресурсы', 'Natural resources')}</b><small>${L('Бассейны и месторождения, страны-лидеры', 'Basins, deposits and leading countries')}</small></button>
-      <button class="tile" data-go="disputes"><span class="ico">⚖️</span><b>${L('Спорные территории', 'Disputed territories')}</b><small>${L('Частично признанные государства и территориальные споры', 'Partially recognized states and territorial disputes')}</small></button>
-      <button class="tile wide" data-go="quiz"><span class="ico">📝</span><span><b>${L('Викторина по билетам', 'Exam quiz')}</b><small>${L(`${QUIZ.length} вопросов с вариантами ответов по 25 темам`, `${QUIZ.length} multiple-choice questions on 25 topics`)}</small></span></button>
-      <button class="tile wide" data-go="stats"><span class="ico">🏆</span><span><b>${L('Мои результаты', 'My results')}</b><small>${L('Лучшие результаты во всех режимах', 'Your best scores in every mode')}</small></span></button>
+  const played = allBest().length;
+  const tiles = [
+    ['orgs', 'orgs', L('Международные организации', 'International organizations'), L('ЕС, НАТО, АСЕАН, БРИКС, ОПЕК, ШОС и др. — найди страны-участницы', 'EU, NATO, ASEAN, BRICS, OPEC, SCO and more — find the member states'), L(ruN(ORGS.length, 'объединение', 'объединения', 'объединений'), `${ORGS.length} groupings`)],
+    ['guess', 'guess', L('Угадай организацию', 'Guess the organization'), L('На карте выделены участники — назовите объединение', 'Members are highlighted on the map — name the group'), L('4 варианта ответа', '4 options per question')],
+    ['gov', 'gov', L('Формы правления', 'Forms of government'), L('Монархия или республика — выучи по карте', 'Monarchy or republic — learn them on the map'), L(ruN(Object.keys(MONARCHIES).length, 'монархия', 'монархии', 'монархий'), `${Object.keys(MONARCHIES).length} monarchies`)],
+    ['fed', 'fed', L('Федерации', 'Federations'), L('Федеративное или унитарное устройство', 'Federal or unitary state'), L(ruN(Object.keys(FEDERATIONS).length, 'федерация', 'федерации', 'федераций'), `${Object.keys(FEDERATIONS).length} federations`)],
+    ['disputes', 'disputes', L('Спорные территории', 'Disputed territories'), L('Частично признанные государства и территориальные споры', 'Partially recognized states and territorial disputes'), L(ruN(DISPUTES.length, 'территория', 'территории', 'территорий'), `${DISPUTES.length} territories`)],
+    ['regions', 'regions', L('Регионы и страны', 'Regions and countries'), L('Регионы из билетов и части света', 'Exam regions and continents'), L(`${ruN(REGIONS.length, 'регион', 'региона', 'регионов')} · 6 частей света`, `${REGIONS.length} regions · 6 continents`)],
+  ];
+  const tiles2 = [
+    ['straits', 'straits', L('Проливы', 'Straits'), L('Важнейшие проливы мира: что соединяют и что разделяют', 'The key straits: what they connect and separate'), L(ruN(STRAITS.length, 'пролив', 'пролива', 'проливов'), `${STRAITS.length} straits`)],
+    ['resources', 'resources', L('Природные ресурсы', 'Natural resources'), L('Бассейны и месторождения, страны-лидеры', 'Basins, deposits and leading countries'), L(ruN(DEPOSITS.length, 'месторождение', 'месторождения', 'месторождений'), `${DEPOSITS.length} deposits`)],
+  ];
+  const tiles3 = [
+    ['quiz', 'quiz', L('Викторина по билетам', 'Exam quiz'), L('Вопросы с вариантами ответов и пояснениями', 'Multiple-choice questions with explanations'), L(`${ruN(QUIZ.length, 'вопрос', 'вопроса', 'вопросов')} · 25 тем`, `${QUIZ.length} questions · 25 topics`)],
+    ['stats', 'stats', L('Мои результаты', 'My results'), L('Лучшие результаты во всех режимах', 'Your best scores in every mode'), played ? L(ruN(played, 'режим пройден', 'режима пройдено', 'режимов пройдено'), `${played} modes played`) : L('пока пусто', 'nothing yet')],
+  ];
+  const tile = ([go, ic, title, desc, meta]) => `<button class="tile" data-go="${go}"><span class="ico">${icon(ic)}</span><b>${esc(title)}</b><small>${esc(desc)}</small><span class="meta">${esc(meta)}</span></button>`;
+  app.innerHTML = `<div class="page home">
+    <section class="home-hero">
+      <div class="hero-bar">
+        <div class="brand"><svg class="i mark" viewBox="0 0 24 24" aria-hidden="true">${ICONS.globe}</svg>${L('ГеоТренажёр', 'GeoTrainer')}</div>
+        <div class="lang-switch" data-lang="${LANG}" role="group" aria-label="${L('Язык', 'Language')}">
+          <button data-lang="ru" aria-pressed="${LANG === 'ru'}">RU</button><button data-lang="en" aria-pressed="${LANG === 'en'}">EN</button>
+        </div>
+      </div>
+      <div class="hero-body">
+        <div class="globe-box"><span class="globe-coords"></span></div>
+        <div class="hero-text">
+          <h1>${L('Политическая карта <em>мира</em>', 'Political map <em>of the world</em>')}</h1>
+          <p>${L('Тренажёр к зачёту и экзамену по экономической и политической географии: страны, объединения, проливы, ресурсы и теория по билетам.', 'Practice for the economic and political geography exam: countries, alliances, straits, resources and exam theory.')}</p>
+          <div class="hero-stats">
+            <span><b>${Object.keys(C).length}</b> ${L('стран и территорий', 'countries & territories')}</span>
+            <span><b>${ORGS.length}</b> ${L('объединений', 'groupings')}</span>
+            <span><b>${STRAITS.length}</b> ${L('проливов', 'straits')}</span>
+            <span><b>${DEPOSITS.length}</b> ${L('месторождения', 'deposits')}</span>
+            <span><b>${QUIZ.length}</b> ${L('вопросов', 'questions')}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="wrap">
+      <div class="section-title">${L('Политическая карта', 'Political map')}</div>
+      <div class="grid">${tiles.map(tile).join('')}</div>
+      <div class="section-title">${L('Физическая и экономическая география', 'Physical and economic geography')}</div>
+      <div class="grid">${tiles2.map(tile).join('')}</div>
+      <div class="section-title">${L('Подготовка к экзамену', 'Exam prep')}</div>
+      <div class="grid">${tiles3.map(tile).join('')}</div>
+      <p class="home-note">${L('Карта приближается колёсиком мыши или двумя пальцами и перемещается перетаскиванием. Маленькие государства показаны кружками. Глобус можно покрутить.', 'Zoom the map with the mouse wheel or two fingers and drag to pan. Very small states are shown as circles. You can spin the globe.')}</p>
     </div>
-    <p class="note" style="text-align:center;margin-top:22px">${L('Карта: приближайте колёсиком мыши или двумя пальцами, перемещайте перетаскиванием. Маленькие государства показаны кружками.', 'Map: zoom with the mouse wheel or two fingers, drag to pan. Very small states are shown as circles.')}</p>
-  </div></div>`;
+  </div>`;
   const routes = { resources: ResourceMenu, disputes: DisputeMenu, guess: GuessMenu, stats: Stats, orgs: OrgList, gov: () => GovMenu('gov'), fed: () => GovMenu('fed'), straits: StraitMenu, regions: RegionList, quiz: QuizMenu };
   app.querySelectorAll('[data-go]').forEach(b => { b.onclick = () => go(routes[b.dataset.go]); });
-  app.querySelectorAll('[data-lang]').forEach(b => {
+  app.querySelectorAll('.lang-switch [data-lang]').forEach(b => {
     b.onclick = () => {
       if (LANG === b.dataset.lang) return;
       LANG = b.dataset.lang; store.set('lang', LANG); applyLang();
-      show(Home);
+      $('.lang-switch').dataset.lang = LANG; // сначала сдвигаем переключатель, затем перерисовываем
+      setTimeout(() => show(Home), 220);
     };
   });
+  return Globe($('.globe-box'), $('.globe-coords'));
+}
+
+// Вращающийся глобус (canvas): суша, сетка и проливы — янтарные точки. Можно крутить пальцем.
+let GLOBE_LAND = null;
+function globeLand() {
+  if (GLOBE_LAND) return GLOBE_LAND;
+  const merged = topojson.merge(WORLD_TOPO, WORLD_TOPO.objects.countries.geometries);
+  const polys = [];
+  for (const poly of merged.coordinates) {
+    const a = d3.geoArea({ type: 'Polygon', coordinates: poly });
+    if (a < 2e-5 || a > 2 * Math.PI) continue; // мелкие острова не нужны на маленьком глобусе
+    polys.push(poly.map(r => r.length > 40 ? r.filter((pt, i) => i % 4 === 0 || i === r.length - 1) : r));
+  }
+  GLOBE_LAND = { type: 'MultiPolygon', coordinates: polys };
+  return GLOBE_LAND;
+}
+function Globe(box, coordsEl) {
+  if (!box) return null;
+  const canvas = document.createElement('canvas');
+  box.prepend(canvas);
+  const ctx = canvas.getContext('2d');
+  const land = globeLand(), grat = d3.geoGraticule10(), dots = STRAITS.map(s => s[1]);
+  const proj = d3.geoOrthographic().clipAngle(90).precision(0.7);
+  const path = d3.geoPath(proj, ctx);
+  let W = 0, dpr = 1, lon = 55, lat = 28, raf = 0, last = 0, dragging = null, idleUntil = 0, stopped = false;
+  function resize() {
+    W = box.clientWidth || 260; dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(W * dpr);
+    proj.translate([W / 2, W / 2]).scale(W / 2 - 4);
+  }
+  const fmt = (v, pos, neg) => `${Math.abs(Math.round(v))}°${v >= 0 ? pos : neg}`;
+  function draw(t) {
+    const r = proj.scale(), c = W / 2;
+    proj.rotate([-lon, -lat]);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, W);
+    // океан с объёмом
+    let g = ctx.createRadialGradient(c - r * .35, c - r * .4, r * .05, c, c, r);
+    g.addColorStop(0, '#1d6474'); g.addColorStop(1, '#08202b');
+    ctx.beginPath(); path({ type: 'Sphere' }); ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); path(grat); ctx.strokeStyle = 'rgba(143,176,187,.16)'; ctx.lineWidth = .6; ctx.stroke();
+    // суша
+    ctx.beginPath(); path(land);
+    g = ctx.createLinearGradient(c - r, c - r, c + r, c + r);
+    g.addColorStop(0, '#e9f6f6'); g.addColorStop(1, '#9fc9cf');
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = 'rgba(8,32,43,.25)'; ctx.lineWidth = .4; ctx.stroke();
+    // тень по краю — шар
+    g = ctx.createRadialGradient(c - r * .3, c - r * .35, r * .3, c, c, r * 1.02);
+    g.addColorStop(0, 'rgba(4,18,26,0)'); g.addColorStop(1, 'rgba(4,18,26,.55)');
+    ctx.beginPath(); path({ type: 'Sphere' }); ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = 'rgba(60,194,203,.55)'; ctx.lineWidth = 1.2; ctx.stroke();
+    // проливы — пульсирующие точки на видимой стороне
+    const centre = [lon, lat];
+    dots.forEach((d, i) => {
+      if (d3.geoDistance(d, centre) > 1.52) return;
+      const p = proj(d); if (!p) return;
+      const k = (Math.sin(t / 520 + i * 1.7) + 1) / 2;
+      ctx.beginPath(); ctx.arc(p[0], p[1], 2.4 + k * 5, 0, Math.PI * 2); ctx.fillStyle = `rgba(255,176,32,${.28 * (1 - k)})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(p[0], p[1], 2.3, 0, Math.PI * 2); ctx.fillStyle = '#ffb020'; ctx.fill();
+    });
+    if (coordsEl) coordsEl.textContent = L(`${fmt(lat, '\u00a0с.\u00a0ш.', '\u00a0ю.\u00a0ш.')} · ${fmt(((lon + 540) % 360) - 180, '\u00a0в.\u00a0д.', '\u00a0з.\u00a0д.')}`, `${fmt(lat, 'N', 'S')} · ${fmt(((lon + 540) % 360) - 180, 'E', 'W')}`);
+  }
+  function frame(t) {
+    if (stopped) return;
+    if (!document.hidden) {
+      const dt = last ? Math.min(t - last, 60) : 16; last = t;
+      if (!dragging && t > idleUntil && !REDUCED) lon += dt * 0.006; // ≈6° в секунду
+      draw(t);
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  canvas.addEventListener('pointerdown', e => { dragging = { x: e.clientX, y: e.clientY, lon, lat }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    lon = dragging.lon - (e.clientX - dragging.x) * 0.45;
+    lat = Math.max(-60, Math.min(70, dragging.lat + (e.clientY - dragging.y) * 0.35));
+    if (REDUCED) draw(performance.now());
+  });
+  const end = () => { dragging = null; idleUntil = performance.now() + 1200; };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+  resize(); draw(0);
+  const onResize = () => { resize(); draw(performance.now()); };
+  window.addEventListener('resize', onResize);
+  raf = requestAnimationFrame(frame);
+  return () => { stopped = true; cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); };
 }
 
 // ===================== Организации и регионы =====================
@@ -667,9 +840,9 @@ function SetMenu({ kind, set }) {
       <p class="members"><b>${countries(set.keys.length)}:</b> ${esc(names.join(', '))}</p>
     </div>
     <div class="modes">
-      <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить на карте', 'Study the map')}</div><small>${L('Страны выделены цветом, нажмите для подписи', 'Countries are highlighted; tap one to see its name')}</small></span></button>
-      <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди страну', 'Find the country')}</div><small>${L('Называется страна — нажмите на неё на карте', 'A country is named — tap it on the map')}</small></span><span class="best">${best(idb + ':find')}</span></button>
-      <button class="mode" data-m="select"><span class="ico">✅</span><span class="txt"><div>${L('Отметь всех участников', 'Select all members')}</div><small>${L('Отметьте все страны сами, затем проверьте', 'Mark every country yourself, then check')}</small></span><span class="best">${best(idb + ':select')}</span></button>
+      <button class="mode" data-m="study"><span class="ico">${icon('study')}</span><span class="txt"><div>${L('Изучить на карте', 'Study the map')}</div><small>${L('Страны выделены цветом, нажмите для подписи', 'Countries are highlighted; tap one to see its name')}</small></span></button>
+      <button class="mode" data-m="find"><span class="ico">${icon('find')}</span><span class="txt"><div>${L('Найди страну', 'Find the country')}</div><small>${L('Называется страна — нажмите на неё на карте', 'A country is named — tap it on the map')}</small></span><span class="best">${best(idb + ':find')}</span></button>
+      <button class="mode" data-m="select"><span class="ico">${icon('select')}</span><span class="txt"><div>${L('Отметь всех участников', 'Select all members')}</div><small>${L('Отметьте все страны сами, затем проверьте', 'Mark every country yourself, then check')}</small></span><span class="best">${best(idb + ':select')}</span></button>
     </div>
   </div></div>`;
   bindBack();
@@ -707,10 +880,10 @@ function GovMenu(kind) {
       <div class="section-title">${L('Количество вопросов (режим «Определи»)', 'Number of questions (“Identify” mode)')}</div>
       <div class="chips" id="cnt">${[10, 20, 40, 0].map(c => `<button class="chip ${c === govState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All')}</button>`).join('')}</div>
       <div class="modes">
-        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${isGov ? L('Цвет страны = форма правления', 'Colour = form of government') : L('Федерации выделены цветом', 'Federations are highlighted')}</small></span></button>
-        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${isGov ? L('Определи форму правления', 'Identify the form of government') : L('Федерация или унитарное?', 'Federal or unitary?')}</div><small>${L('Страна подсвечена на карте — выберите ответ', 'A country is highlighted — pick the answer')}</small></span><span class="best">${best(idb + ':choose:' + govState.count)}</span></button>
-        <button class="mode" data-m="select"><span class="ico">✅</span><span class="txt"><div>${isGov ? L('Отметь все монархии', 'Select all monarchies') : L('Отметь все федерации', 'Select all federations')}</div><small>${L('Найдите их на карте сами, затем проверьте', 'Find them on the map yourself, then check')}</small></span><span class="best">${best(idb + ':select')}</span></button>
-        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${isGov ? L('Найди монархию', 'Find the monarchy') : L('Найди федерацию', 'Find the federation')}</div><small>${L('Называется страна — нажмите на неё на карте', 'A country is named — tap it on the map')}</small></span><span class="best">${best(idb + ':find')}</span></button>
+        <button class="mode" data-m="study"><span class="ico">${icon('study')}</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${isGov ? L('Цвет страны = форма правления', 'Colour = form of government') : L('Федерации выделены цветом', 'Federations are highlighted')}</small></span></button>
+        <button class="mode" data-m="choose"><span class="ico">${icon('choose')}</span><span class="txt"><div>${isGov ? L('Определи форму правления', 'Identify the form of government') : L('Федерация или унитарное?', 'Federal or unitary?')}</div><small>${L('Страна подсвечена на карте — выберите ответ', 'A country is highlighted — pick the answer')}</small></span><span class="best">${best(idb + ':choose:' + govState.count)}</span></button>
+        <button class="mode" data-m="select"><span class="ico">${icon('select')}</span><span class="txt"><div>${isGov ? L('Отметь все монархии', 'Select all monarchies') : L('Отметь все федерации', 'Select all federations')}</div><small>${L('Найдите их на карте сами, затем проверьте', 'Find them on the map yourself, then check')}</small></span><span class="best">${best(idb + ':select')}</span></button>
+        <button class="mode" data-m="find"><span class="ico">${icon('find')}</span><span class="txt"><div>${isGov ? L('Найди монархию', 'Find the monarchy') : L('Найди федерацию', 'Find the federation')}</div><small>${L('Называется страна — нажмите на неё на карте', 'A country is named — tap it on the map')}</small></span><span class="best">${best(idb + ':find')}</span></button>
       </div>
     </div></div>`;
     bindBack();
@@ -764,9 +937,9 @@ function StraitMenu() {
       <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
       <div class="chips">${[10, 15, 30, 0].map(c => `<button class="chip ${c === straitState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All')}</button>`).join('')}</div>
       <div class="modes">
-        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Все проливы с подписями', 'All straits with labels')}</small></span></button>
-        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди пролив', 'Find the strait')}</div><small>${L('Называется пролив — нажмите на нужную точку', 'A strait is named — tap its marker')}</small></span><span class="best">${best('str:find:' + straitState.count)}</span></button>
-        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${L('Как называется пролив?', 'Name the strait')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('str:choose:' + straitState.count)}</span></button>
+        <button class="mode" data-m="study"><span class="ico">${icon('study')}</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Все проливы с подписями', 'All straits with labels')}</small></span></button>
+        <button class="mode" data-m="find"><span class="ico">${icon('find')}</span><span class="txt"><div>${L('Найди пролив', 'Find the strait')}</div><small>${L('Называется пролив — нажмите на нужную точку', 'A strait is named — tap its marker')}</small></span><span class="best">${best('str:find:' + straitState.count)}</span></button>
+        <button class="mode" data-m="choose"><span class="ico">${icon('choose')}</span><span class="txt"><div>${L('Как называется пролив?', 'Name the strait')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('str:choose:' + straitState.count)}</span></button>
       </div>
     </div></div>`;
     bindBack();
@@ -802,10 +975,10 @@ function DisputeMenu() {
       <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
       <div class="chips">${[10, 20, 0].map(c => `<button class="chip ${c === disputeState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All') + ' (' + pins.length + ')'}</button>`).join('')}</div>
       <div class="modes">
-        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Все территории с подписями и справкой', 'Every territory with a label and a profile')}</small></span></button>
-        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди территорию', 'Find the territory')}</div><small>${L('Называется территория — нажмите на нужную точку', 'A territory is named — tap its marker')}</small></span><span class="best">${best('disp:find:' + disputeState.count)}</span></button>
-        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${L('Что это за территория?', 'Name the territory')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('disp:choose:' + disputeState.count)}</span></button>
-        <button class="mode" data-m="ctrl"><span class="ico">🏳️</span><span class="txt"><div>${L('Кто контролирует?', 'Who controls it?')}</div><small>${L('Выберите, кто фактически управляет территорией', 'Pick who actually governs the territory')}</small></span><span class="best">${best('disp:ctrl:' + disputeState.count)}</span></button>
+        <button class="mode" data-m="study"><span class="ico">${icon('study')}</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Все территории с подписями и справкой', 'Every territory with a label and a profile')}</small></span></button>
+        <button class="mode" data-m="find"><span class="ico">${icon('find')}</span><span class="txt"><div>${L('Найди территорию', 'Find the territory')}</div><small>${L('Называется территория — нажмите на нужную точку', 'A territory is named — tap its marker')}</small></span><span class="best">${best('disp:find:' + disputeState.count)}</span></button>
+        <button class="mode" data-m="choose"><span class="ico">${icon('choose')}</span><span class="txt"><div>${L('Что это за территория?', 'Name the territory')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('disp:choose:' + disputeState.count)}</span></button>
+        <button class="mode" data-m="ctrl"><span class="ico">${icon('ctrl')}</span><span class="txt"><div>${L('Кто контролирует?', 'Who controls it?')}</div><small>${L('Выберите, кто фактически управляет территорией', 'Pick who actually governs the territory')}</small></span><span class="best">${best('disp:ctrl:' + disputeState.count)}</span></button>
       </div>
     </div></div>`;
     bindBack();
@@ -857,11 +1030,11 @@ function ResourceMenu() {
       <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
       <div class="chips">${[10, 15, 30, 0].map(c => `<button class="chip ${c === resState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All')}</button>`).join('')}</div>
       <div class="modes">
-        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Цвет точки — тип ресурса; нажмите, чтобы узнать подробности', 'Marker colour shows the resource type; tap for details')}</small></span></button>
-        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди месторождение', 'Find the deposit')}</div><small>${L('Называется бассейн или месторождение — нажмите на нужную точку', 'A basin or deposit is named — tap its marker')}</small></span><span class="best">${best('res:find:' + gid)}</span></button>
-        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${L('Что это за месторождение?', 'Name the deposit')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('res:choose:' + gid)}</span></button>
-        <button class="mode" data-m="what"><span class="ico">⛏️</span><span class="txt"><div>${L('Что здесь добывают?', 'What is mined here?')}</div><small>${L('Точка подсвечена — выберите главный ресурс', 'A marker is highlighted — pick the main resource')}</small></span><span class="best">${best('res:what:' + gid)}</span></button>
-        <button class="mode" data-m="leaders"><span class="ico">🏆</span><span class="txt"><div>${L('Страны-лидеры', 'Leading countries')}</div><small>${L('Кто первый по запасам и добыче? Нажмите на страну на карте', 'Who is first in reserves and output? Tap the country on the map')}</small></span><span class="best">${best('res:leaders:' + resState.count)}</span></button>
+        <button class="mode" data-m="study"><span class="ico">${icon('study')}</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Цвет точки — тип ресурса; нажмите, чтобы узнать подробности', 'Marker colour shows the resource type; tap for details')}</small></span></button>
+        <button class="mode" data-m="find"><span class="ico">${icon('find')}</span><span class="txt"><div>${L('Найди месторождение', 'Find the deposit')}</div><small>${L('Называется бассейн или месторождение — нажмите на нужную точку', 'A basin or deposit is named — tap its marker')}</small></span><span class="best">${best('res:find:' + gid)}</span></button>
+        <button class="mode" data-m="choose"><span class="ico">${icon('choose')}</span><span class="txt"><div>${L('Что это за месторождение?', 'Name the deposit')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('res:choose:' + gid)}</span></button>
+        <button class="mode" data-m="what"><span class="ico">${icon('what')}</span><span class="txt"><div>${L('Что здесь добывают?', 'What is mined here?')}</div><small>${L('Точка подсвечена — выберите главный ресурс', 'A marker is highlighted — pick the main resource')}</small></span><span class="best">${best('res:what:' + gid)}</span></button>
+        <button class="mode" data-m="leaders"><span class="ico">${icon('leaders')}</span><span class="txt"><div>${L('Страны-лидеры', 'Leading countries')}</div><small>${L('Кто первый по запасам и добыче? Нажмите на страну на карте', 'Who is first in reserves and output? Tap the country on the map')}</small></span><span class="best">${best('res:leaders:' + resState.count)}</span></button>
       </div>
     </div></div>`;
     bindBack();
@@ -1055,6 +1228,7 @@ function playQuiz({ qs, retry }) {
         ${wrong.length ? `<button class="btn ghost" id="rw">${L('Только ошибки', 'Mistakes only')}</button>` : ''}
         <button class="btn" id="again">${L('Ещё раз', 'Play again')}</button></div>
       ${wrong.length ? `<div class="section-title">${L('Разбор ошибок', 'Review')}</div>${wrong.map(l => { const q = quizQ(l.idx); return `<div class="qcard" style="margin-bottom:10px"><div class="topic">${L('Билет', 'Topic')} ${q.t}</div><p style="margin:0 0 6px;font-weight:600">${esc(q.q)}</p><p style="margin:0;color:var(--bad)">${L('Ваш ответ', 'Your answer')}: ${esc(l.given)}</p><p style="margin:0 0 6px;color:var(--ok)">${L('Верно', 'Correct')}: ${esc(q.a)}</p><p style="margin:0;color:var(--muted);font-size:14px">${esc(q.e || '')}</p></div>`; }).join('')}` : `<p class="note" style="text-align:center">${L('Без ошибок — отлично!', 'No mistakes — excellent!')}</p>`}`;
+    countUp(qw.querySelector('.result .score'), pct, '%');
     $('#menu').onclick = back;
     $('#again').onclick = () => replace(playQuiz, { qs: shuffle(qs), retry });
     if (wrong.length) $('#rw').onclick = () => replace(playQuiz, { qs: shuffle(wrong.map(l => l.idx)), retry: true });
@@ -1084,7 +1258,7 @@ function GuessMenu() {
       <div class="chips">${[10, 20, 0].map(c => `<button class="chip ${c === guessState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All') + ' (' + pool.length + ')'}</button>`).join('')}</div>
       <div class="section-title">${L('Какие организации', 'Which organizations')}</div>
       <div class="chips"><button class="chip ${guessState.other ? '' : 'on'}" data-o="0">${L('Только основные', 'Main only')} (${ORGS.filter(o => !o.other).length})</button><button class="chip ${guessState.other ? 'on' : ''}" data-o="1">${L('Все', 'All')} (${ORGS.length})</button></div>
-      <div class="modes"><button class="mode" id="start"><span class="ico">🧩</span><span class="txt"><div>${L('Начать', 'Start')}</div><small>${L('4 варианта ответа, после ответа — справка об организации', '4 options; after each answer you get a short profile of the organization')}</small></span><span class="best">${best(id)}</span></button></div>
+      <div class="modes"><button class="mode" id="start"><span class="ico">${icon('start')}</span><span class="txt"><div>${L('Начать', 'Start')}</div><small>${L('4 варианта ответа, после ответа — справка об организации', '4 options; after each answer you get a short profile of the organization')}</small></span><span class="best">${best(id)}</span></button></div>
     </div></div>`;
     bindBack();
     app.querySelectorAll('[data-c]').forEach(b => { b.onclick = () => { guessState.count = +b.dataset.c; render(); }; });
@@ -1166,6 +1340,7 @@ function Stats() {
       : `<div class="info-card" style="margin-top:16px"><p>${L('Пока пусто. Пройдите любой режим — лучший результат появится здесь.', 'Nothing here yet. Play any mode and your best score will appear here.')}</p><p class="members">${L('Результаты хранятся только в этом браузере.', 'Results are stored only in this browser.')}</p></div>`}
     </div></div>`;
     bindBack();
+    countUp($('.result .score'), avg, '%');
     const on = (id, f) => { const el = $('#' + id); if (el) el.onclick = f; };
     on('reset', () => { confirmReset = true; render(); });
     on('no', () => { confirmReset = false; render(); });
