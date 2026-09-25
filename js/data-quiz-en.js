@@ -351,4 +351,9 @@ window.QUIZ_EN = [
 [25,'Which basin supplies water to the pastures of inland Australia?','The Great Artesian Basin',['The Murray–Darling Basin','The Great Barrier Basin','The Western Australian Basin'],'One of the largest artesian basins in the world.'],
 [25,'Which Oceanian state is threatened by flooding from rising sea levels?','Tuvalu',['Papua New Guinea','New Zealand','Fiji'],'Tuvalu’s atolls rise only 4–5 m above sea level.'],
 [25,'What share of Australia’s population are Indigenous peoples (Aboriginal and Torres Strait Islanders)?','About 3–4%',['About 25%','About 50%','Less than 0.1%'],'Most Australians are of European descent; the share of Asian immigrants is growing.'],
+// ——— 5: rare earth elements ———
+[5,'Which country is the world leader in rare earth mining?','China',['United States','Australia','Russia'],'China accounts for about 70% of rare earth mining and about 90% of processing; the USA (Mountain Pass) is second.'],
+[5,'Where is Bayan Obo, the world’s largest rare earth deposit?','In China (Inner Mongolia)',['In Mongolia','In Kazakhstan','In Russia (Yakutia)'],'Bayan Obo is also a deposit of iron ore and niobium.'],
+[5,'What are rare earth elements mainly needed for?','Permanent magnets (electric motors, wind turbines, electronics)',['Smelting pig iron','Making fertilizers','Fuel for nuclear power plants'],'Neodymium, praseodymium, dysprosium and terbium are the basis of powerful magnets.'],
+[5,'Which country supplies about 90% of the world’s niobium (the Araxá deposit)?','Brazil',['Canada','China','Australia'],'Niobium is used in high-strength steels.'],
 ];

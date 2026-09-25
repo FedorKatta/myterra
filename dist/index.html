@@ -291,7 +291,7 @@ button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 3px so
 
 /* ——— Природные ресурсы ——— */
 .pin.r-fuel { stroke: #2b2b2b; } .pin.r-coal { stroke: #8a5a2b; } .pin.r-iron { stroke: #c0392b; }
-.pin.r-metal { stroke: #e67e22; } .pin.r-precious { stroke: #c9a227; } .pin.r-uranium { stroke: #27ae60; } .pin.r-chem { stroke: #8e5ec9; }
+.pin.r-metal { stroke: #e67e22; } .pin.r-precious { stroke: #c9a227; } .pin.r-uranium { stroke: #27ae60; } .pin.r-chem { stroke: #8e5ec9; } .pin.r-rare { stroke: #d6336c; }
 .chip .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
 
 </style>
@@ -835,6 +835,8 @@ window.RES_TYPES = {
   platinum:  { ru:'Платиноиды',         en:'Platinum-group metals', group:'precious' },
   silver:    { ru:'Серебро',            en:'Silver',               group:'precious' },
   uranium:   { ru:'Уран',               en:'Uranium',              group:'uranium' },
+  ree:       { ru:'Редкоземельные металлы', en:'Rare earth elements', group:'rare' },
+  niobium:   { ru:'Ниобий',             en:'Niobium',              group:'rare' },
   phosphate: { ru:'Фосфориты и апатиты', en:'Phosphates',          group:'chem' },
   potash:    { ru:'Калийные соли',      en:'Potash',               group:'chem' },
 };
@@ -846,6 +848,7 @@ window.RES_GROUPS = {
   precious: { ru:'Золото, алмазы, платина', en:'Gold, diamonds, platinum', color:'#c9a227' },
   uranium:  { ru:'Уран',                   en:'Uranium',                  color:'#27ae60' },
   chem:     { ru:'Химическое сырьё',       en:'Chemical raw materials',   color:'#8e5ec9' },
+  rare:     { ru:'Редкоземельные металлы', en:'Rare earth elements',      color:'#d6336c' },
 };
 
 window.DEPOSITS = [
@@ -962,9 +965,9 @@ window.DEPOSITS = [
   { res:['iron'], ll:[33.4, 47.9],
     ru:{ name:'Криворожский бассейн', where:'Украина', info:'Главный железорудный бассейн Украины (Кривой Рог).' },
     en:{ name:'Kryvyi Rih basin', where:'Ukraine', info:'Ukraine’s main iron ore basin (Kryvyi Rih).' } },
-  { res:['iron'], ll:[20.2, 67.85],
-    ru:{ name:'Кируна', where:'Швеция', info:'Одно из крупнейших железорудных месторождений Европы; руда вывозится через порт Нарвик (Норвегия).' },
-    en:{ name:'Kiruna', where:'Sweden', info:'One of Europe’s largest iron ore deposits; the ore is shipped through the port of Narvik (Norway).' } },
+  { res:['iron','ree'], ll:[20.2, 67.85],
+    ru:{ name:'Кируна', where:'Швеция', info:'Одно из крупнейших железорудных месторождений Европы; руда вывозится через порт Нарвик (Норвегия). Рядом в 2023 г. объявлено о находке Пер-Гейер — крупнейшего известного месторождения редкоземельных металлов в Европе.' },
+    en:{ name:'Kiruna', where:'Sweden', info:'One of Europe’s largest iron ore deposits; the ore is shipped through the port of Narvik (Norway). In 2023 the nearby Per Geijer deposit was announced as Europe’s largest known rare earth deposit.' } },
   { res:['iron'], ll:[6.0, 49.2],
     ru:{ name:'Лотарингский бассейн', where:'Франция', info:'Исторический район добычи бедных руд («минетт»); ныне старопромышленный депрессивный район.' },
     en:{ name:'Lorraine basin', where:'France', info:'A historic source of low-grade “minette” ore; now a declining old industrial region.' } },
@@ -1069,6 +1072,47 @@ window.DEPOSITS = [
     ru:{ name:'Алмазы Северо-Западных территорий', where:'Канада', info:'Рудники Экати и Диавик в тундре Северной Канады.' },
     en:{ name:'Northwest Territories diamonds', where:'Canada', info:'The Ekati and Diavik mines in the tundra of northern Canada.' } },
 
+  // ——— Редкоземельные металлы и ниобий ———
+  { res:['ree','iron','niobium'], ll:[109.97, 41.78],
+    ru:{ name:'Баян-Обо', where:'Китай (Внутренняя Монголия)', info:'Крупнейшее в мире месторождение редкоземельных металлов; также железная руда и ниобий. Отсюда — большая часть добычи лёгких РЗМ Китая.' },
+    en:{ name:'Bayan Obo', where:'China (Inner Mongolia)', info:'The world’s largest rare earth deposit; also iron ore and niobium. It supplies most of China’s light rare earth output.' } },
+  { res:['ree'], ll:[114.9, 25.8],
+    ru:{ name:'Ганьчжоу (Южный Китай)', where:'Китай (Цзянси и соседние провинции)', info:'Ионно-адсорбционные глины — главный мировой источник тяжёлых редкоземельных металлов (диспрозий, тербий), нужных для мощных магнитов.' },
+    en:{ name:'Ganzhou (South China)', where:'China (Jiangxi and neighbouring provinces)', info:'Ionic clays: the world’s main source of heavy rare earths (dysprosium, terbium) used in high-performance magnets.' } },
+  { res:['ree'], ll:[98.2, 25.8],
+    ru:{ name:'Штат Качин', where:'Мьянма', info:'Ионно-адсорбционные глины у границы с Китаем; с конца 2010-х гг. — крупный поставщик тяжёлых РЗМ, почти всё сырьё идёт в Китай.' },
+    en:{ name:'Kachin State', where:'Myanmar', info:'Ionic clays near the Chinese border; since the late 2010s a major supplier of heavy rare earths, nearly all of it shipped to China.' } },
+  { res:['ree'], ll:[103.35, 22.4],
+    ru:{ name:'Донгпао', where:'Вьетнам (провинция Лайтяу)', info:'Крупнейшее месторождение редкоземельных металлов Вьетнама — страны с одними из крупнейших запасов РЗМ.' },
+    en:{ name:'Dong Pao', where:'Vietnam (Lai Chau province)', info:'Vietnam’s largest rare earth deposit; the country has some of the largest rare earth reserves.' } },
+  { res:['ree'], ll:[76.53, 8.99],
+    ru:{ name:'Монацитовые пески Кералы', where:'Индия', info:'Прибрежные россыпи монацита (район Чавары); Индия — третья в мире по запасам РЗМ.' },
+    en:{ name:'Kerala monazite sands', where:'India', info:'Coastal monazite placers (the Chavara area); India ranks third in the world for rare earth reserves.' } },
+  { res:['ree'], ll:[34.8, 67.85],
+    ru:{ name:'Ловозёрское месторождение', where:'Россия (Мурманская обл.)', info:'Лопаритовые руды Кольского полуострова — главный источник редкоземельных металлов, добываемых в России; сырьё перерабатывают в Соликамске.' },
+    en:{ name:'Lovozero deposit', where:'Russia (Murmansk region)', info:'Loparite ores of the Kola Peninsula, Russia’s main source of mined rare earths; processed in Solikamsk.' } },
+  { res:['ree','niobium'], ll:[116.0, 71.0],
+    ru:{ name:'Томтор', where:'Россия (север Якутии)', info:'Одно из крупнейших и богатейших в мире месторождений редкоземельных металлов и ниобия; пока не разрабатывается из-за удалённости.' },
+    en:{ name:'Tomtor', where:'Russia (northern Yakutia)', info:'One of the world’s largest and richest rare earth and niobium deposits; not yet developed because of its remoteness.' } },
+  { res:['ree'], ll:[122.55, -28.86],
+    ru:{ name:'Маунт-Уэлд', where:'Австралия (Западная Австралия)', info:'Одно из богатейших месторождений РЗМ в мире; его владелец Lynas — крупнейший вне Китая производитель разделённых редкоземельных металлов.' },
+    en:{ name:'Mount Weld', where:'Australia (Western Australia)', info:'One of the world’s richest rare earth deposits; its owner Lynas is the largest producer of separated rare earths outside China.' } },
+  { res:['ree'], ll:[-115.53, 35.48],
+    ru:{ name:'Маунтин-Пасс', where:'США (Калифорния)', info:'Единственный действующий рудник редкоземельных металлов США; благодаря ему США — второй в мире производитель РЗМ.' },
+    en:{ name:'Mountain Pass', where:'USA (California)', info:'The only operating rare earth mine in the USA, which makes the USA the world’s second-largest producer.' } },
+  { res:['niobium','ree'], ll:[-46.94, -19.6],
+    ru:{ name:'Араша', where:'Бразилия (Минас-Жерайс)', info:'Крупнейшее в мире месторождение ниобия (Бразилия даёт около 90% мировой добычи); также значительные ресурсы редкоземельных металлов.' },
+    en:{ name:'Araxá', where:'Brazil (Minas Gerais)', info:'The world’s largest niobium deposit (Brazil supplies about 90% of world output); also significant rare earth resources.' } },
+  { res:['ree'], ll:[-48.2, -13.5],
+    ru:{ name:'Серра-Верде', where:'Бразилия (Гояс)', info:'Первый крупный рудник ионно-адсорбционных глин вне Азии (добыча с 2024 г.); Бразилия — вторая в мире по запасам РЗМ.' },
+    en:{ name:'Serra Verde', where:'Brazil (Goiás)', info:'The first large ionic-clay rare earth mine outside Asia (producing since 2024); Brazil ranks second in the world for rare earth reserves.' } },
+  { res:['ree'], ll:[-45.9, 60.95],
+    ru:{ name:'Кванефьельд и Танбриз', where:'Гренландия (Дания)', info:'Одни из крупнейших неразработанных месторождений РЗМ в мире на юге Гренландии; освоение Кванефьельда остановлено запретом на добычу урана (2021).' },
+    en:{ name:'Kvanefjeld and Tanbreez', where:'Greenland (Denmark)', info:'Among the world’s largest undeveloped rare earth deposits, in southern Greenland; Kvanefjeld was halted by a 2021 ban on uranium mining.' } },
+  { res:['ree'], ll:[14.6, 58.1],
+    ru:{ name:'Норра-Кярр', where:'Швеция', info:'Месторождение тяжёлых редкоземельных металлов в Южной Швеции; одно из немногих в Европе.' },
+    en:{ name:'Norra Kärr', where:'Sweden', info:'A heavy rare earth deposit in southern Sweden, one of the few in Europe.' } },
+
   // ——— Уран ———
   { res:['uranium'], ll:[68.5, 44.5],
     ru:{ name:'Урановые месторождения Южного Казахстана', where:'Казахстан', info:'Добыча методом подземного выщелачивания; Казахстан даёт около 40% мирового урана.' },
@@ -1122,6 +1166,8 @@ window.RES_LEADERS = [
   { ru:'Добыча алмазов (по количеству)', en:'Diamond production (by carats)', top:['643','072','124'], note:{ ru:'Россия (Якутия), затем Ботсвана и Канада. По стоимости добычи Ботсвана — в числе лидеров.', en:'Russia (Yakutia), then Botswana and Canada. By value, Botswana is among the leaders.' } },
   { ru:'Добыча платины',          en:'Platinum production',     top:['710','643','716'], note:{ ru:'ЮАР (около 70%), затем Россия и Зимбабве.', en:'South Africa (about 70%), then Russia and Zimbabwe.' } },
   { ru:'Добыча серебра',          en:'Silver production',       top:['484','156','604'], note:{ ru:'Мексика, затем Китай и Перу.', en:'Mexico, then China and Peru.' } },
+  { ru:'Добыча редкоземельных металлов', en:'Rare earth production', top:['156','840','104'], note:{ ru:'Китай (около 70% добычи и около 90% переработки), затем США и Мьянма; далее Австралия.', en:'China (about 70% of mining and about 90% of processing), then the USA and Myanmar; next comes Australia.' } },
+  { ru:'Запасы редкоземельных металлов', en:'Rare earth reserves', top:['156','076','356'], note:{ ru:'Китай, затем Бразилия и Индия; далее Австралия и Россия.', en:'China, then Brazil and India; next come Australia and Russia.' } },
   { ru:'Добыча урана',            en:'Uranium production',      top:['398','124','516'], note:{ ru:'Казахстан (около 40%), затем Канада и Намибия. По запасам первая Австралия.', en:'Kazakhstan (about 40%), then Canada and Namibia. Australia has the largest reserves.' } },
   { ru:'Запасы фосфоритов',       en:'Phosphate reserves',      top:['504'],             note:{ ru:'Марокко (с Западной Сахарой) — около 70% мировых запасов. По добыче первый Китай.', en:'Morocco (with Western Sahara) holds about 70% of world reserves. China leads in output.' } },
   { ru:'Добыча калийных солей',   en:'Potash production',       top:['124','643','112'], note:{ ru:'Канада, затем Россия и Беларусь.', en:'Canada, then Russia and Belarus.' } },
@@ -1513,6 +1559,11 @@ window.QUIZ = [
 {t:25,q:'Какой бассейн обеспечивает водой пастбища внутренних районов Австралии?',a:'Большой Артезианский',w:['Мюррей-Дарлинг','Великий Барьерный','Западно-Австралийский'],e:'Один из крупнейших артезианских бассейнов мира.'},
 {t:25,q:'Какое государство Океании находится под угрозой затопления из-за подъёма уровня океана?',a:'Тувалу',w:['Папуа — Новая Гвинея','Новая Зеландия','Фиджи'],e:'Высота атоллов Тувалу — до 4–5 м над уровнем моря.'},
 {t:25,q:'Какую долю населения Австралии составляют коренные жители (аборигены и жители о-вов Торресова пролива)?',a:'Около 3–4%',w:['Около 25%','Около 50%','Менее 0,1%'],e:'Основная часть населения — потомки выходцев из Европы; растёт доля азиатских иммигрантов.'},
+// ——— 5: редкоземельные металлы ———
+{t:5,q:'Какая страна — мировой лидер по добыче редкоземельных металлов?',a:'Китай',w:['США','Австралия','Россия'],e:'Китай даёт около 70% добычи и около 90% переработки РЗМ; второе место — США (Маунтин-Пасс).'},
+{t:5,q:'Где находится Баян-Обо — крупнейшее месторождение редкоземельных металлов мира?',a:'В Китае (Внутренняя Монголия)',w:['В Монголии','В Казахстане','В России (Якутия)'],e:'Баян-Обо — также месторождение железной руды и ниобия.'},
+{t:5,q:'Для чего прежде всего нужны редкоземельные металлы?',a:'Для постоянных магнитов (электромоторы, ветрогенераторы, электроника)',w:['Для выплавки чугуна','Для производства удобрений','Как топливо для АЭС'],e:'Неодим, празеодим, диспрозий, тербий — основа мощных магнитов.'},
+{t:5,q:'Какая страна даёт около 90% мировой добычи ниобия (месторождение Араша)?',a:'Бразилия',w:['Канада','Китай','Австралия'],e:'Ниобий применяется в высокопрочных сталях.'},
 ];
 
 </script>
@@ -2114,6 +2165,11 @@ window.QUIZ_EN = [
 [25,'Which basin supplies water to the pastures of inland Australia?','The Great Artesian Basin',['The Murray–Darling Basin','The Great Barrier Basin','The Western Australian Basin'],'One of the largest artesian basins in the world.'],
 [25,'Which Oceanian state is threatened by flooding from rising sea levels?','Tuvalu',['Papua New Guinea','New Zealand','Fiji'],'Tuvalu’s atolls rise only 4–5 m above sea level.'],
 [25,'What share of Australia’s population are Indigenous peoples (Aboriginal and Torres Strait Islanders)?','About 3–4%',['About 25%','About 50%','Less than 0.1%'],'Most Australians are of European descent; the share of Asian immigrants is growing.'],
+// ——— 5: rare earth elements ———
+[5,'Which country is the world leader in rare earth mining?','China',['United States','Australia','Russia'],'China accounts for about 70% of rare earth mining and about 90% of processing; the USA (Mountain Pass) is second.'],
+[5,'Where is Bayan Obo, the world’s largest rare earth deposit?','In China (Inner Mongolia)',['In Mongolia','In Kazakhstan','In Russia (Yakutia)'],'Bayan Obo is also a deposit of iron ore and niobium.'],
+[5,'What are rare earth elements mainly needed for?','Permanent magnets (electric motors, wind turbines, electronics)',['Smelting pig iron','Making fertilizers','Fuel for nuclear power plants'],'Neodymium, praseodymium, dysprosium and terbium are the basis of powerful magnets.'],
+[5,'Which country supplies about 90% of the world’s niobium (the Araxá deposit)?','Brazil',['Canada','China','Australia'],'Niobium is used in high-strength steels.'],
 ];
 
 </script>
