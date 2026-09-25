@@ -289,6 +289,11 @@ button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 3px so
 .tile.wide > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .prompt { max-height: 34vh; overflow-y: auto; }
 
+/* ——— Природные ресурсы ——— */
+.pin.r-fuel { stroke: #2b2b2b; } .pin.r-coal { stroke: #8a5a2b; } .pin.r-iron { stroke: #c0392b; }
+.pin.r-metal { stroke: #e67e22; } .pin.r-precious { stroke: #c9a227; } .pin.r-uranium { stroke: #27ae60; } .pin.r-chem { stroke: #8e5ec9; }
+.chip .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+
 </style>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -807,6 +812,322 @@ window.DISPUTES = [
       status:'Семь государств (Аргентина, Австралия, Великобритания, Новая Зеландия, Норвегия, Франция, Чили) заявляли претензии на секторы Антарктиды, частично перекрывающиеся. Договор об Антарктике 1959 г. заморозил все претензии; континент используется только в мирных целях.' },
     en:{ name:'Antarctica', ctrl:'Nobody (international regime)',
       status:'Seven states (Argentina, Australia, Chile, France, New Zealand, Norway, the UK) have claimed sectors of Antarctica, some of them overlapping. The 1959 Antarctic Treaty froze all claims; the continent is used for peaceful purposes only.' } },
+];
+
+</script>
+<script>
+// Природные ресурсы: важнейшие бассейны и месторождения мира.
+// res — что добывают (первое значение — главное); ll — [долгота, широта]
+window.RES_TYPES = {
+  oil:       { ru:'Нефть',              en:'Oil',                  group:'fuel' },
+  gas:       { ru:'Природный газ',      en:'Natural gas',          group:'fuel' },
+  coal:      { ru:'Каменный уголь',     en:'Hard coal',            group:'coal' },
+  lignite:   { ru:'Бурый уголь',        en:'Lignite (brown coal)', group:'coal' },
+  iron:      { ru:'Железная руда',      en:'Iron ore',             group:'iron' },
+  copper:    { ru:'Медь',               en:'Copper',               group:'metal' },
+  bauxite:   { ru:'Бокситы',            en:'Bauxite',              group:'metal' },
+  nickel:    { ru:'Никель',             en:'Nickel',               group:'metal' },
+  cobalt:    { ru:'Кобальт',            en:'Cobalt',               group:'metal' },
+  tin:       { ru:'Олово',              en:'Tin',                  group:'metal' },
+  lithium:   { ru:'Литий',              en:'Lithium',              group:'metal' },
+  gold:      { ru:'Золото',             en:'Gold',                 group:'precious' },
+  diamond:   { ru:'Алмазы',             en:'Diamonds',             group:'precious' },
+  platinum:  { ru:'Платиноиды',         en:'Platinum-group metals', group:'precious' },
+  silver:    { ru:'Серебро',            en:'Silver',               group:'precious' },
+  uranium:   { ru:'Уран',               en:'Uranium',              group:'uranium' },
+  phosphate: { ru:'Фосфориты и апатиты', en:'Phosphates',          group:'chem' },
+  potash:    { ru:'Калийные соли',      en:'Potash',               group:'chem' },
+};
+window.RES_GROUPS = {
+  fuel:     { ru:'Нефть и газ',            en:'Oil and gas',              color:'#2b2b2b' },
+  coal:     { ru:'Уголь',                  en:'Coal',                     color:'#8a5a2b' },
+  iron:     { ru:'Железная руда',          en:'Iron ore',                 color:'#c0392b' },
+  metal:    { ru:'Цветные металлы',        en:'Non-ferrous metals',       color:'#e67e22' },
+  precious: { ru:'Золото, алмазы, платина', en:'Gold, diamonds, platinum', color:'#c9a227' },
+  uranium:  { ru:'Уран',                   en:'Uranium',                  color:'#27ae60' },
+  chem:     { ru:'Химическое сырьё',       en:'Chemical raw materials',   color:'#8e5ec9' },
+};
+
+window.DEPOSITS = [
+  // ——— Нефть и газ ———
+  { res:['oil','gas'], ll:[50.5, 27.5],
+    ru:{ name:'Бассейн Персидского залива', where:'Саудовская Аравия, Ирак, Иран, Кувейт, ОАЭ, Катар', info:'Крупнейший нефтегазоносный бассейн мира: около половины мировых запасов нефти. Здесь же Гавар — крупнейшее нефтяное месторождение на суше.' },
+    en:{ name:'Persian Gulf basin', where:'Saudi Arabia, Iraq, Iran, Kuwait, UAE, Qatar', info:'The world’s largest oil and gas basin, holding about half of world oil reserves. It includes Ghawar, the largest onshore oil field.' } },
+  { res:['gas'], ll:[52.6, 26.4],
+    ru:{ name:'Северное / Южный Парс', where:'Катар и Иран', info:'Крупнейшее газовое месторождение мира, поделённое между Катаром (Северное) и Ираном (Южный Парс). Основа экспорта катарского СПГ.' },
+    en:{ name:'North Field / South Pars', where:'Qatar and Iran', info:'The world’s largest gas field, shared by Qatar (North Field) and Iran (South Pars). The basis of Qatar’s LNG exports.' } },
+  { res:['oil','gas'], ll:[73.0, 62.0],
+    ru:{ name:'Западно-Сибирский бассейн', where:'Россия', info:'Главная база добычи нефти и газа России: нефть Самотлора, газ Уренгоя, Ямбурга и полуострова Ямал.' },
+    en:{ name:'West Siberian basin', where:'Russia', info:'Russia’s main oil and gas region: Samotlor oil, and gas from Urengoy, Yamburg and the Yamal Peninsula.' } },
+  { res:['oil'], ll:[53.0, 54.0],
+    ru:{ name:'Волго-Уральский бассейн', where:'Россия (Татарстан, Башкортостан)', info:'«Второе Баку» — главный нефтяной район СССР в 1950–60-е гг. Крупнейшее месторождение — Ромашкинское.' },
+    en:{ name:'Volga-Ural basin', where:'Russia (Tatarstan, Bashkortostan)', info:'The “Second Baku”, the USSR’s main oil region in the 1950s–60s. Its largest field is Romashkino.' } },
+  { res:['oil','gas'], ll:[56.0, 66.3],
+    ru:{ name:'Тимано-Печорский бассейн', where:'Россия (Коми, Ненецкий АО)', info:'Нефтегазоносный бассейн на северо-востоке европейской части России, включая шельф Печорского моря.' },
+    en:{ name:'Timan-Pechora basin', where:'Russia (Komi, Nenets)', info:'An oil and gas basin in northeastern European Russia, including the Pechora Sea shelf.' } },
+  { res:['oil','gas'], ll:[143.5, 52.5],
+    ru:{ name:'Шельф Сахалина', where:'Россия', info:'Морские месторождения нефти и газа у северо-восточного побережья Сахалина; отсюда идёт экспорт СПГ.' },
+    en:{ name:'Sakhalin shelf', where:'Russia', info:'Offshore oil and gas fields off northeastern Sakhalin; the source of Russia’s Pacific LNG exports.' } },
+  { res:['oil','gas'], ll:[52.5, 46.3],
+    ru:{ name:'Прикаспийский бассейн (Тенгиз, Кашаган)', where:'Казахстан, Россия', info:'Крупные нефтяные месторождения Казахстана — Тенгиз на суше и Кашаган на шельфе Каспия; газоконденсатное Карачаганакское.' },
+    en:{ name:'Pre-Caspian basin (Tengiz, Kashagan)', where:'Kazakhstan, Russia', info:'Kazakhstan’s giant oil fields: Tengiz onshore and Kashagan offshore in the Caspian; plus the Karachaganak gas-condensate field.' } },
+  { res:['gas'], ll:[62.5, 37.5],
+    ru:{ name:'Галкыныш', where:'Туркменистан', info:'Одно из крупнейших газовых месторождений мира. Газ идёт в Китай по газопроводу Центральная Азия — Китай.' },
+    en:{ name:'Galkynysh', where:'Turkmenistan', info:'One of the world’s largest gas fields. Its gas flows to China through the Central Asia–China pipeline.' } },
+  { res:['oil'], ll:[125.0, 46.6],
+    ru:{ name:'Дацин', where:'Китай', info:'Крупнейшее нефтяное месторождение Китая, на Северо-Востоке (провинция Хэйлунцзян).' },
+    en:{ name:'Daqing', where:'China', info:'China’s largest oil field, in the Northeast (Heilongjiang province).' } },
+  { res:['oil','gas'], ll:[2.5, 58.5],
+    ru:{ name:'Североморский бассейн', where:'Норвегия, Великобритания', info:'Морской нефтегазоносный бассейн; разрабатывается с 1970-х гг. Основа экономики Норвегии.' },
+    en:{ name:'North Sea basin', where:'Norway, United Kingdom', info:'An offshore oil and gas basin developed since the 1970s; the backbone of Norway’s economy.' } },
+  { res:['oil','gas'], ll:[6.0, 31.5],
+    ru:{ name:'Сахарский бассейн (Хасси-Мессауд)', where:'Алжир', info:'Нефть Хасси-Мессауда и газ Хасси-Рмеля; газ идёт в Европу по трубопроводам через Средиземное море.' },
+    en:{ name:'Saharan basin (Hassi Messaoud)', where:'Algeria', info:'Oil from Hassi Messaoud and gas from Hassi R’Mel; the gas reaches Europe by pipelines under the Mediterranean.' } },
+  { res:['oil'], ll:[19.5, 29.0],
+    ru:{ name:'Сиртский бассейн', where:'Ливия', info:'Главный нефтяной район Ливии — страны с крупнейшими запасами нефти в Африке.' },
+    en:{ name:'Sirte basin', where:'Libya', info:'The main oil region of Libya, the country with Africa’s largest oil reserves.' } },
+  { res:['oil','gas'], ll:[6.0, 4.8],
+    ru:{ name:'Бассейн Гвинейского залива (дельта Нигера)', where:'Нигерия', info:'Главный нефтегазоносный район Нигерии; нефть добывают на суше и на шельфе.' },
+    en:{ name:'Gulf of Guinea basin (Niger Delta)', where:'Nigeria', info:'Nigeria’s main oil and gas region, producing both onshore and offshore.' } },
+  { res:['oil','gas'], ll:[-91.0, 27.0],
+    ru:{ name:'Бассейн Мексиканского залива', where:'США, Мексика', info:'Нефть и газ на суше и на глубоководном шельфе; побережье Техаса и Луизианы — крупнейший центр нефтепереработки.' },
+    en:{ name:'Gulf of Mexico basin', where:'USA, Mexico', info:'Oil and gas onshore and in deep offshore waters; the Texas–Louisiana coast is the largest refining hub.' } },
+  { res:['oil','gas'], ll:[-102.5, 31.8],
+    ru:{ name:'Пермский бассейн', where:'США (Техас, Нью-Мексико)', info:'Главный нефтедобывающий район США; основа сланцевой революции.' },
+    en:{ name:'Permian Basin', where:'USA (Texas, New Mexico)', info:'The main oil-producing area of the USA and the heart of the shale revolution.' } },
+  { res:['oil'], ll:[-148.5, 70.3],
+    ru:{ name:'Северный склон Аляски (Прадхо-Бей)', where:'США', info:'Крупнейшее нефтяное месторождение Северной Америки; нефть идёт по Трансаляскинскому нефтепроводу.' },
+    en:{ name:'Alaska North Slope (Prudhoe Bay)', where:'USA', info:'North America’s largest oil field; its oil flows through the Trans-Alaska Pipeline.' } },
+  { res:['oil'], ll:[-112.5, 57.0],
+    ru:{ name:'Нефтеносные пески Атабаски (Альберта)', where:'Канада', info:'Огромные запасы битуминозной нефти — благодаря им Канада входит в число лидеров по запасам нефти.' },
+    en:{ name:'Athabasca oil sands (Alberta)', where:'Canada', info:'Huge bitumen reserves that put Canada among the leaders in oil reserves.' } },
+  { res:['oil'], ll:[-71.6, 9.8],
+    ru:{ name:'Маракайбо', where:'Венесуэла', info:'Старейший нефтяной район Венесуэлы — у озера (залива) Маракайбо.' },
+    en:{ name:'Maracaibo', where:'Venezuela', info:'Venezuela’s oldest oil region, around Lake Maracaibo.' } },
+  { res:['oil'], ll:[-64.0, 8.5],
+    ru:{ name:'Пояс Ориноко', where:'Венесуэла', info:'Крупнейшие в мире запасы сверхтяжёлой нефти — из-за них Венесуэла первая в мире по запасам нефти.' },
+    en:{ name:'Orinoco Belt', where:'Venezuela', info:'The world’s largest extra-heavy oil reserves, which make Venezuela first in the world for oil reserves.' } },
+  { res:['oil','gas'], ll:[-40.5, -23.5],
+    ru:{ name:'Подсолевые месторождения шельфа (Сантус, Кампус)', where:'Бразилия', info:'Глубоководная нефть под толщей соли у побережья Рио-де-Жанейро и Сан-Паулу; главный источник роста добычи Бразилии.' },
+    en:{ name:'Pre-salt offshore fields (Santos, Campos)', where:'Brazil', info:'Deep-water oil beneath thick salt layers off Rio de Janeiro and São Paulo; the main driver of Brazil’s output growth.' } },
+
+  // ——— Уголь ———
+  { res:['coal'], ll:[86.5, 54.0],
+    ru:{ name:'Кузнецкий бассейн (Кузбасс)', where:'Россия', info:'Главный угольный бассейн России: добывается больше половины российского угля, в том числе коксующийся.' },
+    en:{ name:'Kuznetsk basin (Kuzbass)', where:'Russia', info:'Russia’s main coal basin, producing more than half of the country’s coal, including coking coal.' } },
+  { res:['lignite'], ll:[92.0, 56.0],
+    ru:{ name:'Канско-Ачинский бассейн', where:'Россия', info:'Крупнейший буроугольный бассейн России; дешёвая открытая добыча для электростанций.' },
+    en:{ name:'Kansk-Achinsk basin', where:'Russia', info:'Russia’s largest lignite basin, with cheap open-pit mining for power plants.' } },
+  { res:['coal'], ll:[63.8, 67.5],
+    ru:{ name:'Печорский бассейн', where:'Россия (Воркута, Инта)', info:'Каменный уголь, в том числе коксующийся, за Полярным кругом.' },
+    en:{ name:'Pechora basin', where:'Russia (Vorkuta, Inta)', info:'Hard coal, including coking coal, north of the Arctic Circle.' } },
+  { res:['coal'], ll:[38.5, 48.0],
+    ru:{ name:'Донецкий бассейн (Донбасс)', where:'Восток Украины и Ростовская область России', info:'Старейший каменноугольный бассейн региона; основа тяжёлой промышленности Донбасса.' },
+    en:{ name:'Donets basin (Donbas)', where:'Eastern Ukraine and Russia’s Rostov region', info:'The region’s oldest hard-coal basin and the basis of Donbas heavy industry.' } },
+  { res:['coal'], ll:[73.1, 49.8],
+    ru:{ name:'Карагандинский бассейн', where:'Казахстан', info:'Коксующийся уголь для металлургии; основа промышленности Центрального Казахстана.' },
+    en:{ name:'Karaganda basin', where:'Kazakhstan', info:'Coking coal for steelmaking; the industrial base of central Kazakhstan.' } },
+  { res:['coal'], ll:[75.3, 51.7],
+    ru:{ name:'Экибастузский бассейн', where:'Казахстан', info:'Энергетический уголь, добываемый открытым способом в крупнейших разрезах; снабжает мощные ГРЭС.' },
+    en:{ name:'Ekibastuz basin', where:'Kazakhstan', info:'Thermal coal from some of the largest open-pit mines, supplying big power stations.' } },
+  { res:['coal'], ll:[7.2, 51.5],
+    ru:{ name:'Рурский бассейн', where:'Германия', info:'Исторический центр тяжёлой промышленности Германии. Добыча каменного угля в Германии прекращена в 2018 г.' },
+    en:{ name:'Ruhr basin', where:'Germany', info:'The historic heart of German heavy industry. Hard-coal mining in Germany ended in 2018.' } },
+  { res:['coal'], ll:[19.0, 50.2],
+    ru:{ name:'Верхнесилезский бассейн', where:'Польша, Чехия', info:'Главный угольный район Польши и основа её электроэнергетики.' },
+    en:{ name:'Upper Silesian basin', where:'Poland, Czechia', info:'Poland’s main coal region and the backbone of its power sector.' } },
+  { res:['coal'], ll:[-81.0, 38.5],
+    ru:{ name:'Аппалачский бассейн', where:'США', info:'Старейший угольный бассейн США; уголь для металлургии Питтсбурга и промышленности Северо-Востока.' },
+    en:{ name:'Appalachian basin', where:'USA', info:'The oldest US coal basin, supplying Pittsburgh steel and Northeastern industry.' } },
+  { res:['coal'], ll:[-105.5, 44.0],
+    ru:{ name:'Бассейн Паудер-Ривер', where:'США (Вайоминг, Монтана)', info:'Даёт около 40% угля США; добыча открытым способом.' },
+    en:{ name:'Powder River basin', where:'USA (Wyoming, Montana)', info:'Produces about 40% of US coal, by open-pit mining.' } },
+  { res:['coal'], ll:[112.5, 37.5],
+    ru:{ name:'Угольный бассейн Шаньси', where:'Китай', info:'Вместе с Внутренней Монголией — главный угледобывающий район Китая, крупнейшего производителя угля в мире.' },
+    en:{ name:'Shanxi coal basin', where:'China', info:'With Inner Mongolia, the main coal region of China, the world’s largest coal producer.' } },
+  { res:['coal'], ll:[86.5, 23.7],
+    ru:{ name:'Дамодарский бассейн', where:'Индия', info:'Главный угольный район Индии (Джария, Раниганж); основа металлургии северо-востока Декана.' },
+    en:{ name:'Damodar basin', where:'India', info:'India’s main coal region (Jharia, Raniganj), supplying steelworks in the northeastern Deccan.' } },
+  { res:['coal'], ll:[116.5, -1.0],
+    ru:{ name:'Угольные месторождения Калимантана', where:'Индонезия', info:'Благодаря им Индонезия — крупнейший экспортёр энергетического угля.' },
+    en:{ name:'Kalimantan coalfields', where:'Indonesia', info:'They make Indonesia the largest exporter of thermal coal.' } },
+  { res:['coal'], ll:[148.5, -22.5],
+    ru:{ name:'Боуэнский бассейн', where:'Австралия (Квинсленд)', info:'Коксующийся уголь на экспорт в Азию; Австралия — крупнейший экспортёр металлургического угля.' },
+    en:{ name:'Bowen basin', where:'Australia (Queensland)', info:'Coking coal for export to Asia; Australia is the largest exporter of metallurgical coal.' } },
+
+  // ——— Железная руда ———
+  { res:['iron'], ll:[37.5, 51.2],
+    ru:{ name:'Курская магнитная аномалия (КМА)', where:'Россия', info:'Крупнейший железорудный бассейн России (Лебединский, Михайловский ГОКи).' },
+    en:{ name:'Kursk Magnetic Anomaly (KMA)', where:'Russia', info:'Russia’s largest iron ore basin (Lebedinsky and Mikhailovsky mining complexes).' } },
+  { res:['iron'], ll:[33.4, 47.9],
+    ru:{ name:'Криворожский бассейн', where:'Украина', info:'Главный железорудный бассейн Украины (Кривой Рог).' },
+    en:{ name:'Kryvyi Rih basin', where:'Ukraine', info:'Ukraine’s main iron ore basin (Kryvyi Rih).' } },
+  { res:['iron'], ll:[20.2, 67.85],
+    ru:{ name:'Кируна', where:'Швеция', info:'Одно из крупнейших железорудных месторождений Европы; руда вывозится через порт Нарвик (Норвегия).' },
+    en:{ name:'Kiruna', where:'Sweden', info:'One of Europe’s largest iron ore deposits; the ore is shipped through the port of Narvik (Norway).' } },
+  { res:['iron'], ll:[6.0, 49.2],
+    ru:{ name:'Лотарингский бассейн', where:'Франция', info:'Исторический район добычи бедных руд («минетт»); ныне старопромышленный депрессивный район.' },
+    en:{ name:'Lorraine basin', where:'France', info:'A historic source of low-grade “minette” ore; now a declining old industrial region.' } },
+  { res:['iron'], ll:[118.5, -22.5],
+    ru:{ name:'Пилбара', where:'Австралия', info:'Главный железорудный район мира; руда идёт в основном в Китай через порты Порт-Хедленд и Дампир.' },
+    en:{ name:'Pilbara', where:'Australia', info:'The world’s main iron ore region; ore goes mostly to China via Port Hedland and Dampier.' } },
+  { res:['iron'], ll:[-50.3, -6.0],
+    ru:{ name:'Каражас', where:'Бразилия', info:'Одно из крупнейших железорудных месторождений мира с очень богатыми рудами (штат Пара, Амазония).' },
+    en:{ name:'Carajás', where:'Brazil', info:'One of the world’s largest iron ore mines, with very high-grade ore (Pará state, Amazonia).' } },
+  { res:['iron','gold'], ll:[-43.8, -20.2],
+    ru:{ name:'Железорудный четырёхугольник', where:'Бразилия (Минас-Жерайс)', info:'Старый горнорудный район Бразилии: железная руда, а исторически — золото.' },
+    en:{ name:'Iron Quadrangle', where:'Brazil (Minas Gerais)', info:'Brazil’s old mining region: iron ore and, historically, gold.' } },
+  { res:['iron'], ll:[-66.8, 53.0],
+    ru:{ name:'Лабрадорский бассейн', where:'Канада', info:'Железная руда полуострова Лабрадор, вывозится через порты залива Святого Лаврентия.' },
+    en:{ name:'Labrador Trough', where:'Canada', info:'Iron ore of the Labrador Peninsula, shipped via ports on the Gulf of St Lawrence.' } },
+  { res:['iron'], ll:[-92.5, 47.5],
+    ru:{ name:'Месаби (район Верхнего озера)', where:'США', info:'Главный железорудный район США; руда идёт по Великим озёрам к металлургическим заводам.' },
+    en:{ name:'Mesabi Range (Lake Superior)', where:'USA', info:'The main US iron ore region; ore travels via the Great Lakes to steel mills.' } },
+
+  // ——— Цветные металлы ———
+  { res:['copper','cobalt'], ll:[27.5, -12.5],
+    ru:{ name:'Медный пояс', where:'Замбия, ДР Конго', info:'Крупнейший медно-кобальтовый район Африки; ДР Конго даёт около 70% мирового кобальта.' },
+    en:{ name:'Copperbelt', where:'Zambia, DR Congo', info:'Africa’s largest copper-cobalt region; DR Congo supplies about 70% of the world’s cobalt.' } },
+  { res:['copper'], ll:[-69.0, -23.3],
+    ru:{ name:'Медные рудники Атакамы (Чукикамата, Эскондида)', where:'Чили', info:'Крупнейшие медные рудники мира; Чили — мировой лидер по добыче меди.' },
+    en:{ name:'Atacama copper mines (Chuquicamata, Escondida)', where:'Chile', info:'Some of the world’s largest copper mines; Chile leads the world in copper output.' } },
+  { res:['copper'], ll:[-112.15, 40.52],
+    ru:{ name:'Бингем-Каньон', where:'США (Юта)', info:'Один из крупнейших карьеров мира; медь, а также золото, серебро, молибден.' },
+    en:{ name:'Bingham Canyon', where:'USA (Utah)', info:'One of the world’s largest open pits: copper plus gold, silver and molybdenum.' } },
+  { res:['copper','gold'], ll:[137.1, -4.05],
+    ru:{ name:'Грасберг', where:'Индонезия (Новая Гвинея)', info:'Одно из крупнейших в мире месторождений меди и золота, высоко в горах Новой Гвинеи.' },
+    en:{ name:'Grasberg', where:'Indonesia (New Guinea)', info:'One of the world’s largest copper and gold deposits, high in the mountains of New Guinea.' } },
+  { res:['copper'], ll:[67.7, 47.8],
+    ru:{ name:'Жезказган', where:'Казахстан', info:'Крупный центр добычи и выплавки меди в Центральном Казахстане.' },
+    en:{ name:'Zhezkazgan', where:'Kazakhstan', info:'A major copper mining and smelting centre in central Kazakhstan.' } },
+  { res:['copper','silver'], ll:[16.1, 51.5],
+    ru:{ name:'Легница-Глогув', where:'Польша', info:'Медно-серебряные месторождения; Польша — один из крупнейших производителей серебра.' },
+    en:{ name:'Legnica–Głogów', where:'Poland', info:'Copper-silver deposits; Poland is one of the largest silver producers.' } },
+  { res:['nickel','copper','platinum'], ll:[88.2, 69.35],
+    ru:{ name:'Норильск', where:'Россия', info:'Крупнейший в мире производитель палладия; также никель, медь и платина.' },
+    en:{ name:'Norilsk', where:'Russia', info:'The world’s largest source of palladium; also nickel, copper and platinum.' } },
+  { res:['nickel'], ll:[121.9, -2.8],
+    ru:{ name:'Никелевые месторождения Сулавеси', where:'Индонезия', info:'Благодаря им Индонезия даёт около половины мирового никеля.' },
+    en:{ name:'Sulawesi nickel deposits', where:'Indonesia', info:'They make Indonesia the source of about half the world’s nickel.' } },
+  { res:['nickel','copper'], ll:[-81.0, 46.5],
+    ru:{ name:'Садбери', where:'Канада (Онтарио)', info:'Медно-никелевые руды в древнем метеоритном кратере.' },
+    en:{ name:'Sudbury', where:'Canada (Ontario)', info:'Copper-nickel ores in an ancient meteorite impact crater.' } },
+  { res:['bauxite'], ll:[-14.3, 10.9],
+    ru:{ name:'Бокситы Гвинеи (Боке)', where:'Гвинея', info:'Крупнейшие в мире запасы бокситов; Гвинея — один из лидеров по их добыче.' },
+    en:{ name:'Guinea bauxite (Boké)', where:'Guinea', info:'The world’s largest bauxite reserves; Guinea is one of the top producers.' } },
+  { res:['bauxite'], ll:[141.9, -12.6],
+    ru:{ name:'Вейпа (полуостров Кейп-Йорк)', where:'Австралия', info:'Один из крупнейших бокситовых районов мира.' },
+    en:{ name:'Weipa (Cape York Peninsula)', where:'Australia', info:'One of the world’s largest bauxite regions.' } },
+  { res:['bauxite'], ll:[-77.3, 18.1],
+    ru:{ name:'Бокситы Ямайки', where:'Ямайка', info:'Бокситы и глинозём — традиционная основа экспорта Ямайки.' },
+    en:{ name:'Jamaican bauxite', where:'Jamaica', info:'Bauxite and alumina are Jamaica’s traditional export base.' } },
+  { res:['tin'], ll:[106.0, -2.2],
+    ru:{ name:'Оловянные месторождения Банки и Белитунга', where:'Индонезия', info:'Часть оловянного пояса Юго-Восточной Азии.' },
+    en:{ name:'Bangka–Belitung tin fields', where:'Indonesia', info:'Part of the Southeast Asian tin belt.' } },
+  { res:['silver','tin'], ll:[-65.75, -19.6],
+    ru:{ name:'Потоси (Серро-Рико)', where:'Боливия', info:'Легендарная «серебряная гора» колониальной эпохи; позднее — олово.' },
+    en:{ name:'Potosí (Cerro Rico)', where:'Bolivia', info:'The legendary “silver mountain” of the colonial era; later a tin source.' } },
+  { res:['lithium'], ll:[-67.5, -20.2],
+    ru:{ name:'Солончак Уюни («литиевый треугольник»)', where:'Боливия (также Чили и Аргентина)', info:'Солончаки Анд Боливии, Чили и Аргентины содержат большую часть мировых запасов лития.' },
+    en:{ name:'Salar de Uyuni (“lithium triangle”)', where:'Bolivia (also Chile and Argentina)', info:'The Andean salt flats of Bolivia, Chile and Argentina hold most of the world’s lithium reserves.' } },
+  { res:['lithium'], ll:[116.06, -33.86],
+    ru:{ name:'Гринбушес', where:'Австралия', info:'Крупнейший рудник твёрдых литиевых руд (сподумена); Австралия — лидер по добыче лития.' },
+    en:{ name:'Greenbushes', where:'Australia', info:'The largest hard-rock (spodumene) lithium mine; Australia leads lithium mining.' } },
+
+  // ——— Золото, алмазы, платина, серебро ———
+  { res:['gold'], ll:[27.9, -26.2],
+    ru:{ name:'Витватерсранд', where:'ЮАР', info:'Крупнейший в истории золотоносный район; вокруг него вырос Йоханнесбург.' },
+    en:{ name:'Witwatersrand', where:'South Africa', info:'The largest gold-bearing region in history; Johannesburg grew up around it.' } },
+  { res:['platinum'], ll:[28.3, -24.6],
+    ru:{ name:'Бушвельдский комплекс', where:'ЮАР', info:'Около 70% мировой добычи платины, а также хром и ванадий.' },
+    en:{ name:'Bushveld Complex', where:'South Africa', info:'About 70% of world platinum output, plus chromium and vanadium.' } },
+  { res:['gold'], ll:[121.5, -30.75],
+    ru:{ name:'Калгурли (Суперпит)', where:'Австралия', info:'Главный золотодобывающий район Австралии.' },
+    en:{ name:'Kalgoorlie (Super Pit)', where:'Australia', info:'Australia’s main gold-mining district.' } },
+  { res:['gold'], ll:[64.6, 41.5],
+    ru:{ name:'Мурунтау', where:'Узбекистан', info:'Один из крупнейших в мире карьеров по добыче золота, в пустыне Кызылкум.' },
+    en:{ name:'Muruntau', where:'Uzbekistan', info:'One of the world’s largest open-pit gold mines, in the Kyzylkum Desert.' } },
+  { res:['gold'], ll:[78.2, 41.87],
+    ru:{ name:'Кумтор', where:'Киргизия', info:'Крупнейшее золоторудное месторождение Киргизии, высоко в горах Тянь-Шаня.' },
+    en:{ name:'Kumtor', where:'Kyrgyzstan', info:'Kyrgyzstan’s largest gold mine, high in the Tian Shan.' } },
+  { res:['gold'], ll:[-116.3, 40.9],
+    ru:{ name:'Карлинский пояс (Невада)', where:'США', info:'Главный золотодобывающий район США.' },
+    en:{ name:'Carlin Trend (Nevada)', where:'USA', info:'The main gold-mining district of the USA.' } },
+  { res:['diamond'], ll:[114.0, 62.5],
+    ru:{ name:'Алмазы Якутии (Мирный, Удачный)', where:'Россия', info:'Россия — первая в мире по добыче алмазов (по количеству каратов).' },
+    en:{ name:'Yakutian diamonds (Mirny, Udachny)', where:'Russia', info:'Russia leads the world in diamond output by carats.' } },
+  { res:['diamond'], ll:[25.0, -22.8],
+    ru:{ name:'Алмазы Ботсваны (Джваненг, Орапа)', where:'Ботсвана', info:'Один из лидеров по стоимости добываемых алмазов; алмазы — основа экономики страны.' },
+    en:{ name:'Botswana diamonds (Jwaneng, Orapa)', where:'Botswana', info:'One of the leaders by value of diamonds mined; diamonds are the backbone of the economy.' } },
+  { res:['diamond'], ll:[24.76, -28.74],
+    ru:{ name:'Кимберли', where:'ЮАР', info:'Место алмазной лихорадки XIX в.; по нему названа горная порода кимберлит.' },
+    en:{ name:'Kimberley', where:'South Africa', info:'Site of the 19th-century diamond rush; the rock kimberlite is named after it.' } },
+  { res:['diamond'], ll:[23.6, -6.1],
+    ru:{ name:'Алмазы Касаи (Мбужи-Майи)', where:'ДР Конго', info:'Крупный район добычи в основном технических алмазов.' },
+    en:{ name:'Kasai diamonds (Mbuji-Mayi)', where:'DR Congo', info:'A major source of mostly industrial diamonds.' } },
+  { res:['diamond'], ll:[-110.3, 64.7],
+    ru:{ name:'Алмазы Северо-Западных территорий', where:'Канада', info:'Рудники Экати и Диавик в тундре Северной Канады.' },
+    en:{ name:'Northwest Territories diamonds', where:'Canada', info:'The Ekati and Diavik mines in the tundra of northern Canada.' } },
+
+  // ——— Уран ———
+  { res:['uranium'], ll:[68.5, 44.5],
+    ru:{ name:'Урановые месторождения Южного Казахстана', where:'Казахстан', info:'Добыча методом подземного выщелачивания; Казахстан даёт около 40% мирового урана.' },
+    en:{ name:'Southern Kazakhstan uranium fields', where:'Kazakhstan', info:'Mined by in-situ leaching; Kazakhstan supplies about 40% of the world’s uranium.' } },
+  { res:['uranium'], ll:[-104.5, 58.0],
+    ru:{ name:'Бассейн Атабаска (Сигар-Лейк)', where:'Канада (Саскачеван)', info:'Самые богатые урановые руды в мире.' },
+    en:{ name:'Athabasca Basin (Cigar Lake)', where:'Canada (Saskatchewan)', info:'The world’s highest-grade uranium ores.' } },
+  { res:['uranium','copper','gold'], ll:[136.9, -30.4],
+    ru:{ name:'Олимпик-Дам', where:'Австралия', info:'Крупнейшие в мире ресурсы урана в одном месторождении; также медь и золото. У Австралии — крупнейшие запасы урана.' },
+    en:{ name:'Olympic Dam', where:'Australia', info:'The world’s largest single uranium resource, plus copper and gold. Australia has the largest uranium reserves.' } },
+  { res:['uranium'], ll:[7.3, 18.7],
+    ru:{ name:'Арлит', where:'Нигер', info:'Урановые рудники в Сахаре; уран — важнейший экспорт Нигера.' },
+    en:{ name:'Arlit', where:'Niger', info:'Uranium mines in the Sahara; uranium is one of Niger’s key exports.' } },
+  { res:['uranium'], ll:[15.0, -22.5],
+    ru:{ name:'Россинг и Хусаб', where:'Намибия', info:'Крупные урановые рудники в пустыне Намиб; Намибия — в тройке лидеров по добыче урана.' },
+    en:{ name:'Rössing and Husab', where:'Namibia', info:'Large uranium mines in the Namib Desert; Namibia is among the top three uranium producers.' } },
+
+  // ——— Химическое сырьё ———
+  { res:['phosphate'], ll:[-6.9, 32.9],
+    ru:{ name:'Фосфориты Хурибги', where:'Марокко', info:'Марокко (с Западной Сахарой) — около 70% мировых запасов фосфоритов.' },
+    en:{ name:'Khouribga phosphates', where:'Morocco', info:'Morocco (with Western Sahara) holds about 70% of world phosphate reserves.' } },
+  { res:['phosphate'], ll:[33.8, 67.7],
+    ru:{ name:'Хибины', where:'Россия (Мурманская обл.)', info:'Апатито-нефелиновые руды — сырьё для фосфорных удобрений.' },
+    en:{ name:'Khibiny Mountains', where:'Russia (Murmansk region)', info:'Apatite-nepheline ores used for phosphate fertilizers.' } },
+  { res:['potash'], ll:[56.8, 59.4],
+    ru:{ name:'Верхнекамское месторождение', where:'Россия (Березники, Соликамск)', info:'Одно из крупнейших в мире месторождений калийных солей.' },
+    en:{ name:'Verkhnekamskoye deposit', where:'Russia (Berezniki, Solikamsk)', info:'One of the world’s largest potash deposits.' } },
+  { res:['potash'], ll:[27.55, 52.8],
+    ru:{ name:'Старобинское месторождение (Солигорск)', where:'Беларусь', info:'Калийные соли — один из главных экспортных товаров Беларуси.' },
+    en:{ name:'Starobin deposit (Salihorsk)', where:'Belarus', info:'Potash is one of Belarus’s main exports.' } },
+  { res:['potash'], ll:[-106.5, 52.0],
+    ru:{ name:'Калийный бассейн Саскачевана', where:'Канада', info:'Канада — мировой лидер по добыче калийных солей.' },
+    en:{ name:'Saskatchewan potash basin', where:'Canada', info:'Canada is the world leader in potash output.' } },
+];
+
+// Страны-лидеры: top — первые места по порядку (ключи стран), note — пояснение
+window.RES_LEADERS = [
+  { ru:'Запасы нефти',            en:'Oil reserves',            top:['862','682','364'], note:{ ru:'Венесуэла (пояс Ориноко), затем Саудовская Аравия и Иран; далее Канада и Ирак.', en:'Venezuela (Orinoco Belt), then Saudi Arabia and Iran; next come Canada and Iraq.' } },
+  { ru:'Добыча нефти',            en:'Oil production',          top:['840','682','643'], note:{ ru:'США (сланцевая нефть), затем Саудовская Аравия и Россия.', en:'The USA (shale oil), then Saudi Arabia and Russia.' } },
+  { ru:'Запасы природного газа',  en:'Natural gas reserves',    top:['643','364','634'], note:{ ru:'Россия, затем Иран и Катар.', en:'Russia, then Iran and Qatar.' } },
+  { ru:'Добыча природного газа',  en:'Natural gas production',  top:['840','643','364'], note:{ ru:'США, затем Россия и Иран.', en:'The USA, then Russia and Iran.' } },
+  { ru:'Запасы угля',             en:'Coal reserves',           top:['840','643','036'], note:{ ru:'США, затем Россия и Австралия; далее Китай и Индия.', en:'The USA, then Russia and Australia; next come China and India.' } },
+  { ru:'Добыча угля',             en:'Coal production',         top:['156','356','360'], note:{ ru:'Китай (больше половины мировой добычи), затем Индия и Индонезия.', en:'China (more than half of world output), then India and Indonesia.' } },
+  { ru:'Добыча железной руды',    en:'Iron ore production',     top:['036','076','156'], note:{ ru:'Австралия, затем Бразилия и Китай.', en:'Australia, then Brazil and China.' } },
+  { ru:'Добыча меди',             en:'Copper production',       top:['152','180','604'], note:{ ru:'Чили, затем ДР Конго и Перу.', en:'Chile, then DR Congo and Peru.' } },
+  { ru:'Добыча бокситов',         en:'Bauxite production',      top:['324','036','156'], note:{ ru:'Гвинея, затем Австралия и Китай. Гвинея также первая по запасам.', en:'Guinea, then Australia and China. Guinea also has the largest reserves.' } },
+  { ru:'Добыча никеля',           en:'Nickel production',       top:['360','608','643'], note:{ ru:'Индонезия (около половины мировой добычи), затем Филиппины и Россия.', en:'Indonesia (about half of world output), then the Philippines and Russia.' } },
+  { ru:'Добыча кобальта',         en:'Cobalt production',       top:['180','360','643'], note:{ ru:'ДР Конго (около 70%), далее с большим отрывом Индонезия и Россия.', en:'DR Congo (about 70%), far ahead of Indonesia and Russia.' } },
+  { ru:'Добыча лития',            en:'Lithium production',      top:['036','152','156'], note:{ ru:'Австралия, затем Чили и Китай. По запасам первая Чили.', en:'Australia, then Chile and China. Chile has the largest reserves.' } },
+  { ru:'Добыча золота',           en:'Gold production',         top:['156','643','036'], note:{ ru:'Китай, затем Россия и Австралия.', en:'China, then Russia and Australia.' } },
+  { ru:'Добыча алмазов (по количеству)', en:'Diamond production (by carats)', top:['643','072','124'], note:{ ru:'Россия (Якутия), затем Ботсвана и Канада. По стоимости добычи Ботсвана — в числе лидеров.', en:'Russia (Yakutia), then Botswana and Canada. By value, Botswana is among the leaders.' } },
+  { ru:'Добыча платины',          en:'Platinum production',     top:['710','643','716'], note:{ ru:'ЮАР (около 70%), затем Россия и Зимбабве.', en:'South Africa (about 70%), then Russia and Zimbabwe.' } },
+  { ru:'Добыча серебра',          en:'Silver production',       top:['484','156','604'], note:{ ru:'Мексика, затем Китай и Перу.', en:'Mexico, then China and Peru.' } },
+  { ru:'Добыча урана',            en:'Uranium production',      top:['398','124','516'], note:{ ru:'Казахстан (около 40%), затем Канада и Намибия. По запасам первая Австралия.', en:'Kazakhstan (about 40%), then Canada and Namibia. Australia has the largest reserves.' } },
+  { ru:'Запасы фосфоритов',       en:'Phosphate reserves',      top:['504'],             note:{ ru:'Марокко (с Западной Сахарой) — около 70% мировых запасов. По добыче первый Китай.', en:'Morocco (with Western Sahara) holds about 70% of world reserves. China leads in output.' } },
+  { ru:'Добыча калийных солей',   en:'Potash production',       top:['124','643','112'], note:{ ru:'Канада, затем Россия и Беларусь.', en:'Canada, then Russia and Belarus.' } },
+  { ru:'Площадь лесов',           en:'Forest area',             top:['643','076','124'], note:{ ru:'Россия (около 20% лесов мира), затем Бразилия и Канада.', en:'Russia (about 20% of the world’s forests), then Brazil and Canada.' } },
+  { ru:'Ресурсы пресной воды (речной сток)', en:'Freshwater resources (river runoff)', top:['076','643'], note:{ ru:'Бразилия (Амазонка), затем Россия.', en:'Brazil (the Amazon), then Russia.' } },
+  { ru:'Выработка электроэнергии на ГЭС', en:'Hydropower generation', top:['156','076','124'], note:{ ru:'Китай (ГЭС «Три ущелья»), затем Бразилия и Канада.', en:'China (Three Gorges Dam), then Brazil and Canada.' } },
 ];
 
 </script>
@@ -1911,6 +2232,15 @@ const disputeName = k => dispT(+k.slice(1)).name;
 const disputeInfo = k => dispT(+k.slice(1)).status;
 const disputePins = () => DISPUTES.map((d, i) => ({ key: 'd' + i, lonlat: d.ll, label: dispT(i).name }));
 
+const resT = i => DEPOSITS[i][LANG] || DEPOSITS[i].ru;
+const resLabel = code => L(RES_TYPES[code].ru, RES_TYPES[code].en);
+const resGroupOf = i => RES_TYPES[DEPOSITS[i].res[0]].group;
+const depositName = k => resT(+k.slice(1)).name;
+const depositInfo = k => {
+  const i = +k.slice(1), t = resT(i);
+  return `${t.where}. ${L('Добывают', 'Resources')}: ${DEPOSITS[i].res.map(resLabel).join(', ')}. ${t.info}`;
+};
+
 const topicName = n => L(TOPICS[n], TOPICS_EN[n]);
 const quizQ = i => {
   const q = QUIZ[i];
@@ -2398,14 +2728,15 @@ function Home() {
       <button class="tile" data-go="fed"><span class="ico">🏛️</span><b>${L('Федерации', 'Federations')}</b><small>${L('Федеративное или унитарное устройство', 'Federal or unitary state')}</small></button>
       <button class="tile" data-go="straits"><span class="ico">🌊</span><b>${L('Проливы', 'Straits')}</b><small>${L(`${STRAITS.length} проливов мира: найди на карте`, `${STRAITS.length} of the world’s straits: find them on the map`)}</small></button>
       <button class="tile" data-go="regions"><span class="ico">🗺️</span><b>${L('Регионы и страны', 'Regions and countries')}</b><small>${L('Регионы из билетов и части света', 'Exam regions and continents')}</small></button>
-      <button class="tile" data-go="quiz"><span class="ico">📝</span><b>${L('Викторина по билетам', 'Exam quiz')}</b><small>${L(`${QUIZ.length} вопросов с вариантами ответов по 25 темам`, `${QUIZ.length} multiple-choice questions on 25 topics`)}</small></button>
       <button class="tile" data-go="guess"><span class="ico">🧩</span><b>${L('Угадай организацию', 'Guess the organization')}</b><small>${L('На карте выделены участники — назовите объединение', 'Members are highlighted on the map — name the group')}</small></button>
+      <button class="tile" data-go="resources"><span class="ico">⛏️</span><b>${L('Природные ресурсы', 'Natural resources')}</b><small>${L('Бассейны и месторождения, страны-лидеры', 'Basins, deposits and leading countries')}</small></button>
       <button class="tile" data-go="disputes"><span class="ico">⚖️</span><b>${L('Спорные территории', 'Disputed territories')}</b><small>${L('Частично признанные государства и территориальные споры', 'Partially recognized states and territorial disputes')}</small></button>
+      <button class="tile wide" data-go="quiz"><span class="ico">📝</span><span><b>${L('Викторина по билетам', 'Exam quiz')}</b><small>${L(`${QUIZ.length} вопросов с вариантами ответов по 25 темам`, `${QUIZ.length} multiple-choice questions on 25 topics`)}</small></span></button>
       <button class="tile wide" data-go="stats"><span class="ico">🏆</span><span><b>${L('Мои результаты', 'My results')}</b><small>${L('Лучшие результаты во всех режимах', 'Your best scores in every mode')}</small></span></button>
     </div>
     <p class="note" style="text-align:center;margin-top:22px">${L('Карта: приближайте колёсиком мыши или двумя пальцами, перемещайте перетаскиванием. Маленькие государства показаны кружками.', 'Map: zoom with the mouse wheel or two fingers, drag to pan. Very small states are shown as circles.')}</p>
   </div></div>`;
-  const routes = { disputes: DisputeMenu, guess: GuessMenu, stats: Stats, orgs: OrgList, gov: () => GovMenu('gov'), fed: () => GovMenu('fed'), straits: StraitMenu, regions: RegionList, quiz: QuizMenu };
+  const routes = { resources: ResourceMenu, disputes: DisputeMenu, guess: GuessMenu, stats: Stats, orgs: OrgList, gov: () => GovMenu('gov'), fed: () => GovMenu('fed'), straits: StraitMenu, regions: RegionList, quiz: QuizMenu };
   app.querySelectorAll('[data-go]').forEach(b => { b.onclick = () => go(routes[b.dataset.go]); });
   app.querySelectorAll('[data-lang]').forEach(b => {
     b.onclick = () => {
@@ -2624,6 +2955,144 @@ function DisputeMenu() {
     app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
   };
   render();
+}
+
+// ===================== Природные ресурсы =====================
+const resState = { group: 'all', count: 15 };
+function ResourceMenu() {
+  const render = () => {
+    const title = L('Природные ресурсы', 'Natural resources');
+    const idx = DEPOSITS.map((d, i) => i).filter(i => resState.group === 'all' || resGroupOf(i) === resState.group);
+    const pins = idx.map(i => ({ key: 'r' + i, lonlat: DEPOSITS[i].ll, label: resT(i).name }));
+    const gid = `${resState.group}:${resState.count}`;
+    app.innerHTML = `${topbar(title)}<div class="page"><div class="wrap">
+      <div class="info-card">
+        <p>${L('Важнейшие бассейны и месторождения мира: нефть и газ, уголь, руды металлов, золото и алмазы, уран, химическое сырьё. После каждого ответа — справка: где находится и что добывают.', 'The world’s key basins and deposits: oil and gas, coal, metal ores, gold and diamonds, uranium, chemical raw materials. After each answer you get a short profile: where it is and what is mined.')}</p>
+        <p class="members">${L(`Месторождений и бассейнов: ${DEPOSITS.length}; рейтингов стран-лидеров: ${RES_LEADERS.length}.`, `${DEPOSITS.length} deposits and basins; ${RES_LEADERS.length} country rankings.`)}</p>
+      </div>
+      <div class="section-title">${L('Тип ресурса', 'Resource type')}</div>
+      <div class="chips">${[['all', L('Все', 'All'), null]].concat(Object.entries(RES_GROUPS).map(([g, v]) => [g, L(v.ru, v.en), v.color]))
+        .map(([g, label, color]) => `<button class="chip ${g === resState.group ? 'on' : ''}" data-g="${g}">${color ? `<i class="dot" style="background:${color}"></i>` : ''}${esc(label)}</button>`).join('')}</div>
+      <p class="note">${L('Выбрано', 'Selected')}: ${pins.length}</p>
+      <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
+      <div class="chips">${[10, 15, 30, 0].map(c => `<button class="chip ${c === resState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All')}</button>`).join('')}</div>
+      <div class="modes">
+        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Цвет точки — тип ресурса; нажмите, чтобы узнать подробности', 'Marker colour shows the resource type; tap for details')}</small></span></button>
+        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди месторождение', 'Find the deposit')}</div><small>${L('Называется бассейн или месторождение — нажмите на нужную точку', 'A basin or deposit is named — tap its marker')}</small></span><span class="best">${best('res:find:' + gid)}</span></button>
+        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${L('Что это за месторождение?', 'Name the deposit')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('res:choose:' + gid)}</span></button>
+        <button class="mode" data-m="what"><span class="ico">⛏️</span><span class="txt"><div>${L('Что здесь добывают?', 'What is mined here?')}</div><small>${L('Точка подсвечена — выберите главный ресурс', 'A marker is highlighted — pick the main resource')}</small></span><span class="best">${best('res:what:' + gid)}</span></button>
+        <button class="mode" data-m="leaders"><span class="ico">🏆</span><span class="txt"><div>${L('Страны-лидеры', 'Leading countries')}</div><small>${L('Кто первый по запасам и добыче? Нажмите на страну на карте', 'Who is first in reserves and output? Tap the country on the map')}</small></span><span class="best">${best('res:leaders:' + resState.count)}</span></button>
+      </div>
+    </div></div>`;
+    bindBack();
+    app.querySelectorAll('[data-g]').forEach(b => { b.onclick = () => { resState.group = b.dataset.g; render(); }; });
+    app.querySelectorAll('[data-c]').forEach(b => { b.onclick = () => { resState.count = +b.dataset.c; render(); }; });
+    const pick = () => { const all = pins.map(p => p.key); return resState.count ? sample(all, resState.count) : shuffle(all); };
+    const nameItems = () => pick().map(k => {
+      const wrong = sample(pins.filter(p => p.key !== k).map(p => p.label), 3);
+      return { key: k, q: L('Что это за месторождение или бассейн?', 'Which deposit or basin is this?'), correct: depositName(k), options: shuffle([depositName(k), ...wrong]), info: depositInfo(k) };
+    });
+    const whatItems = () => pick().map(k => {
+      const d = DEPOSITS[+k.slice(1)];
+      const right = resLabel(d.res[0]);
+      const wrong = sample(Object.keys(RES_TYPES).filter(c => !d.res.includes(c)), 3).map(resLabel);
+      // название не показываем до ответа — оно часто подсказывает ресурс («Фосфориты Хурибги»)
+      return { key: k, q: L('Что главным образом добывают здесь?', 'What is mainly mined here?'), correct: right, options: shuffle([right, ...wrong]), info: `${depositName(k)} — ${depositInfo(k)}` };
+    });
+    const groups = Object.entries(RES_GROUPS).map(([g, v]) => ({ cls: 'r-' + g, label: L(v.ru, v.en), color: v.color, keys: pins.filter(p => resGroupOf(+p.key.slice(1)) === g).map(p => p.key) })).filter(g => g.keys.length);
+    const acts = {
+      study: () => go(playStudy, { title, pins, labels: true, nameOf: depositName, infoOf: depositInfo, chips: pins.map(p => p.key), groups }),
+      find: () => go(playFind, { id: 'res:find:' + gid, title, keys: pick(), pins, nameOf: depositName, infoOf: depositInfo, verb: L('Найдите', 'Find') }),
+      choose: () => go(playChoose, { id: 'res:choose:' + gid, title, pins, nameOf: depositName, items: nameItems(), regen: nameItems }),
+      what: () => go(playChoose, { id: 'res:what:' + gid, title, modeLabel: L('что здесь добывают', 'what is mined here'), pins, nameOf: depositName, items: whatItems(), regen: whatItems }),
+      leaders: () => go(playLeaders, { id: 'res:leaders:' + resState.count, title: L('Страны-лидеры', 'Leading countries'), count: resState.count }),
+    };
+    app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
+  };
+  render();
+}
+
+// Режим «Страны-лидеры»: нажмите на карте на страну, занимающую первое место
+function playLeaders(cfg) {
+  const ui = gameShell(cfg.title);
+  const items = cfg.items || (cfg.count ? sample(RES_LEADERS, cfg.count) : shuffle(RES_LEADERS));
+  const map = GeoMap(ui.mapEl, { center: 10, onClick });
+  map.setHome(null); map.fitView(null, false);
+  const timer = makeTimer(ui.timerEl);
+  const label = it => L(it.ru, it.en);
+  const res = [];
+  let i = 0, tries = 0, state = 'ask';
+  function ask() {
+    if (i >= items.length) return finish();
+    const it = items[i];
+    tries = 0; state = 'ask';
+    map.removeAll('ok1 ok2 ok3 fail sel hl');
+    ui.prog.textContent = `${i + 1}/${items.length}`;
+    ui.bar.style.width = (i / items.length * 100) + '%';
+    ui.prompt.innerHTML = `${L('Первое место', 'Number one')}: <b>${esc(label(it))}</b> <span class="sub">${L('Нажмите на страну-лидера на карте', 'Tap the leading country on the map')}</span>`;
+    ui.panel.innerHTML = `<div class="btnrow"><button class="btn ghost" data-a="skip">${L('Не знаю — показать', 'Don’t know — show me')}</button></div>`;
+    ui.panel.querySelector('[data-a=skip]').onclick = () => { if (state === 'ask') { tries = 3; reveal(); } };
+  }
+  function reveal() {
+    state = 'reveal';
+    const t = items[i].top[0];
+    map.add(t, 'hl'); map.ensureVisible(t);
+    ui.prompt.innerHTML = `${L('Правильный ответ', 'Correct answer')}: <b>${esc(nameOf(t))}</b> <span class="sub">${L('подсвечен на карте — нажмите на него, чтобы продолжить', 'highlighted on the map — tap it to continue')}</span>`;
+  }
+  function onClick(k, ev) {
+    const it = items[i];
+    if (state === 'done' || state === 'finished') {
+      const place = it && state === 'done' ? it.top.indexOf(k) : -1;
+      map.tip(nameOf(k) + (place >= 0 ? ` — №${place + 1}` : ''), ev, '', 1500);
+      return;
+    }
+    const target = it.top[0];
+    if (state === 'reveal') {
+      if (k === target) showResult();
+      else map.tip(L('Нажмите на подсвеченную: ', 'Tap the highlighted one: ') + nameOf(target), ev, 'bad');
+      return;
+    }
+    if (k === target) { map.tip(nameOf(k), ev, 'good', 900); showResult(); }
+    else {
+      tries++; buzz(); map.flash(k); map.tip(L('Это: ', 'That’s ') + nameOf(k), ev, 'bad');
+      if (tries >= 3) reveal();
+    }
+  }
+  function showResult() {
+    state = 'done';
+    const it = items[i], [first, ...rest] = it.top;
+    res[i] = tries;
+    map.remove(first, 'hl'); map.add(first, tries >= 3 ? 'fail' : 'ok' + (tries + 1));
+    rest.forEach(k => map.add(k, 'sel'));
+    ui.prompt.innerHTML = `<b>${esc(label(it))}</b> <span class="sub">${esc(L(it.note.ru, it.note.en))}</span>`;
+    const firstColor = ['var(--c-ok1)', 'var(--c-ok2)', 'var(--c-ok3)', 'var(--c-fail)'][Math.min(tries, 3)];
+    ui.panel.innerHTML = `<div class="legend"><span><i style="background:${firstColor}"></i>${L('№1', '#1')}</span>${rest.length ? `<span><i style="background:var(--c-sel)"></i>${rest.length > 1 ? L('№2–3', '#2–3') : L('№2', '#2')}</span>` : ''}</div>
+      <div class="btnrow"><button class="btn">${i + 1 < items.length ? L('Далее', 'Next') : L('Результаты', 'Results')}</button></div>`;
+    ui.panel.querySelector('.btn').onclick = () => { i++; ask(); };
+  }
+  function finish() {
+    state = 'finished'; timer.stop();
+    map.removeAll('ok1 ok2 ok3 fail sel hl');
+    const n = items.length;
+    const pct = Math.round(items.reduce((s, it, j) => s + [1, 0.5, 0.25, 0][res[j]], 0) / n * 100);
+    const first = res.filter(r => r === 0).length;
+    saveBest(cfg.id, pct, timer.secs(), L('Страны-лидеры по ресурсам', 'Leading countries by resource'));
+    const wrongIdx = items.map((it, j) => j).filter(j => res[j] > 0);
+    inlineResult(ui, {
+      pct, line: L(`С первой попытки: ${first} из ${n}`, `First try: ${first} of ${n}`) + ` · ${fmtTime(timer.secs())} · ${stars(pct)}`,
+      mistakes: wrongIdx.map(j => ({ key: String(j), name: label(items[j]), note: nameOf(items[j].top[0]) })),
+      onRetry: () => replace(playLeaders, Object.assign({}, cfg, { items: null })),
+      onRetryWrong: wrongIdx.length ? () => replace(playLeaders, Object.assign({}, cfg, { items: shuffle(wrongIdx.map(j => items[j])), id: null })) : null,
+      onChip: j => {
+        const it = items[+j];
+        map.removeAll('ok1 sel');
+        map.add(it.top[0], 'ok1'); it.top.slice(1).forEach(k => map.add(k, 'sel'));
+        ui.prompt.innerHTML = `<b>${esc(label(it))}</b> <span class="sub">${esc(L(it.note.ru, it.note.en))}</span>`;
+      },
+    });
+  }
+  ask();
+  return () => timer.stop();
 }
 
 // ===================== Викторина по билетам =====================

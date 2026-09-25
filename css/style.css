@@ -285,3 +285,8 @@ button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 3px so
 .tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 14px; min-height: 0; }
 .tile.wide > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .prompt { max-height: 34vh; overflow-y: auto; }
+
+/* ——— Природные ресурсы ——— */
+.pin.r-fuel { stroke: #2b2b2b; } .pin.r-coal { stroke: #8a5a2b; } .pin.r-iron { stroke: #c0392b; }
+.pin.r-metal { stroke: #e67e22; } .pin.r-precious { stroke: #c9a227; } .pin.r-uranium { stroke: #27ae60; } .pin.r-chem { stroke: #8e5ec9; }
+.chip .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }

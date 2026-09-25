@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const read = f => fs.readFileSync(path.join(__dirname, f), 'utf8');
 
-const scripts = ['js/world.js', 'js/data-countries.js', 'js/data-orgs.js', 'js/data-gov.js', 'js/data-straits.js', 'js/data-disputes.js', 'js/data-quiz.js', 'js/data-en.js', 'js/data-quiz-en.js', 'js/app.js'];
+const scripts = ['js/world.js', 'js/data-countries.js', 'js/data-orgs.js', 'js/data-gov.js', 'js/data-straits.js', 'js/data-disputes.js', 'js/data-resources.js', 'js/data-quiz.js', 'js/data-en.js', 'js/data-quiz-en.js', 'js/app.js'];
 for (const f of scripts) if (/<\/script/i.test(read(f))) throw new Error(`${f} содержит </script>`);
 
 const html = `<title>ГеоТренажёр</title>
