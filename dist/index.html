@@ -282,6 +282,13 @@ button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 3px so
 .lang-switch button { border: 0; background: transparent; color: #fff; font-weight: 700; font-size: 13px; letter-spacing: .04em; padding: 6px 10px; border-radius: 7px; min-width: 40px; }
 .lang-switch button[aria-pressed="true"] { background: #fff; color: var(--primary); }
 
+/* ——— Спорные территории и широкая плитка ——— */
+.pin.g-state { stroke: #8e5ec9; }
+.pin.g-terr { stroke: #d9534f; }
+.tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 14px; min-height: 0; }
+.tile.wide > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.prompt { max-height: 34vh; overflow-y: auto; }
+
 </style>
 <div id="app"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -638,6 +645,168 @@ window.STRAITS = [
   ['Тунисский (Сицилийский)', [11.3, 37.3], 'западную и восточную части Средиземного моря', 'о. Сицилия и Африку (Тунис)'],
   ['Карские Ворота', [57.9, 70.5], 'Баренцево и Карское моря', 'острова Новая Земля и Вайгач'],
   ['Вилькицкого', [103.0, 77.95], 'Карское море и море Лаптевых', 'п-ов Таймыр и архипелаг Северная Земля'],
+];
+
+</script>
+<script>
+// Спорные территории и частично признанные государства (по состоянию на 2025 г.).
+// Позиции сторон изложены нейтрально: кто фактически контролирует территорию и кто на неё претендует.
+// group: state — частично признанные / непризнанные государства; terr — территориальные споры между государствами
+// ll — точка на карте [долгота, широта]; ctrl — кто фактически контролирует (для режима «Кто контролирует?»)
+window.DISPUTES = [
+  // ——— Частично признанные и непризнанные государства ———
+  { id:'taiwan', group:'state', ll:[121.0, 23.7],
+    ru:{ name:'Тайвань', ctrl:'Правительство Китайской Республики (Тайбэй)',
+      status:'Остров контролирует правительство Китайской Республики (Тайбэй). КНР считает Тайвань своей провинцией. В 1971 г. место Китая в ООН перешло к КНР. Тайвань официально признают около 12 государств (включая Ватикан); с остальными — неофициальные отношения.' },
+    en:{ name:'Taiwan', ctrl:'Government of the Republic of China (Taipei)',
+      status:'The island is governed by the Republic of China (Taipei). The PRC regards Taiwan as one of its provinces. China’s UN seat passed to the PRC in 1971. About 12 states (including the Vatican) formally recognize Taiwan; others keep unofficial relations.' } },
+  { id:'kosovo', group:'state', ll:[20.9, 42.6],
+    ru:{ name:'Косово', ctrl:'Власти Республики Косово',
+      status:'Провозгласило независимость от Сербии в 2008 г. Признано примерно половиной государств — членов ООН, в том числе США и большинством стран ЕС. Сербия, Россия, Китай и пять стран ЕС (Испания, Греция, Кипр, Румыния, Словакия) не признают. Не член ООН.' },
+    en:{ name:'Kosovo', ctrl:'Authorities of the Republic of Kosovo',
+      status:'Declared independence from Serbia in 2008. Recognized by about half of UN member states, including the USA and most EU countries. Serbia, Russia, China and five EU states (Spain, Greece, Cyprus, Romania, Slovakia) do not recognize it. Not a UN member.' } },
+  { id:'palestine', group:'state', ll:[35.25, 31.9],
+    ru:{ name:'Палестина', ctrl:'Частично Израиль, частично палестинские власти',
+      status:'Государство Палестина провозглашено в 1988 г.; с 2012 г. — государство-наблюдатель ООН. Территории — Западный берег реки Иордан (с Восточным Иерусалимом) и сектор Газа; значительная часть Западного берега под контролем Израиля. Признано более чем 150 из 193 членов ООН; в 2025 г. к ним присоединились Великобритания, Франция, Канада и Австралия.' },
+    en:{ name:'Palestine', ctrl:'Partly Israel, partly Palestinian authorities',
+      status:'The State of Palestine was proclaimed in 1988 and has been a UN observer state since 2012. Its territory is the West Bank (with East Jerusalem) and the Gaza Strip; much of the West Bank is under Israeli control. Recognized by more than 150 of the 193 UN members; the UK, France, Canada and Australia joined them in 2025.' } },
+  { id:'wsahara', group:'state', ll:[-12.9, 24.2],
+    ru:{ name:'Западная Сахара', ctrl:'Большей частью Марокко',
+      status:'Бывшая испанская колония. Большую часть контролирует Марокко, восточную часть — фронт ПОЛИСАРИО, провозгласивший Сахарскую Арабскую Демократическую Республику (САДР). САДР — член Африканского союза. ООН считает Западную Сахару несамоуправляющейся территорией. США, Франция, Испания и Великобритания поддерживают марокканский план автономии.' },
+    en:{ name:'Western Sahara', ctrl:'Mostly Morocco',
+      status:'A former Spanish colony. Morocco controls most of it; the eastern part is held by the Polisario Front, which proclaimed the Sahrawi Arab Democratic Republic (SADR). The SADR is an African Union member. The UN lists Western Sahara as a non-self-governing territory. The USA, France, Spain and the UK support Morocco’s autonomy plan.' } },
+  { id:'ncyprus', group:'state', ll:[33.6, 35.25],
+    ru:{ name:'Северный Кипр', ctrl:'Турецкая Республика Северного Кипра',
+      status:'Север острова контролируется с 1974 г., после ввода турецких войск. Турецкая Республика Северного Кипра провозглашена в 1983 г.; её признаёт только Турция. Республика Кипр (член ЕС) считает эту территорию своей. Между частями острова — буферная зона ООН.' },
+    en:{ name:'Northern Cyprus', ctrl:'Turkish Republic of Northern Cyprus',
+      status:'The north of the island has been controlled since the Turkish military intervention of 1974. The Turkish Republic of Northern Cyprus was proclaimed in 1983 and is recognized only by Turkey. The Republic of Cyprus (an EU member) regards the area as its own. A UN buffer zone separates the two parts.' } },
+  { id:'abkhazia', group:'state', ll:[41.0, 43.05],
+    ru:{ name:'Абхазия', ctrl:'Власти Абхазии',
+      status:'Фактически независима от Грузии с 1990-х гг. После войны 2008 г. признана Россией и ещё несколькими государствами (в их числе Никарагуа, Венесуэла, Науру). Грузия и большинство государств считают Абхазию частью Грузии.' },
+    en:{ name:'Abkhazia', ctrl:'Authorities of Abkhazia',
+      status:'De facto independent from Georgia since the 1990s. After the 2008 war it was recognized by Russia and a few other states (including Nicaragua, Venezuela and Nauru). Georgia and most states regard Abkhazia as part of Georgia.' } },
+  { id:'sossetia', group:'state', ll:[44.0, 42.3],
+    ru:{ name:'Южная Осетия', ctrl:'Власти Южной Осетии',
+      status:'Фактически независима от Грузии с 1990-х гг. После войны 2008 г. признана Россией и ещё несколькими государствами (в их числе Никарагуа, Венесуэла, Науру). Грузия и большинство государств считают её частью Грузии.' },
+    en:{ name:'South Ossetia', ctrl:'Authorities of South Ossetia',
+      status:'De facto independent from Georgia since the 1990s. After the 2008 war it was recognized by Russia and a few other states (including Nicaragua, Venezuela and Nauru). Georgia and most states regard it as part of Georgia.' } },
+  { id:'transnistria', group:'state', ll:[29.5, 47.2],
+    ru:{ name:'Приднестровье', ctrl:'Власти Приднестровской Молдавской Республики',
+      status:'Приднестровская Молдавская Республика фактически не подчиняется Молдове с 1990–1992 гг. Не признана ни одним государством — членом ООН. Молдова считает регион своей территорией; в Приднестровье находятся российские военные.' },
+    en:{ name:'Transnistria', ctrl:'Authorities of the Pridnestrovian Moldavian Republic',
+      status:'The Pridnestrovian Moldavian Republic has been outside Moldova’s control since 1990–1992. It is not recognized by any UN member state. Moldova regards the region as its territory; Russian troops are stationed there.' } },
+  { id:'somaliland', group:'state', ll:[45.5, 9.8],
+    ru:{ name:'Сомалиленд', ctrl:'Власти Сомалиленда',
+      status:'Провозгласил независимость от Сомали в 1991 г. и с тех пор фактически самостоятелен: свои власти, валюта, выборы. Международного признания в целом не получил; Сомали считает его своей территорией.' },
+    en:{ name:'Somaliland', ctrl:'Authorities of Somaliland',
+      status:'Declared independence from Somalia in 1991 and has since functioned on its own, with its own government, currency and elections. It has not gained broad international recognition; Somalia regards it as its territory.' } },
+  { id:'karabakh', group:'state', ll:[46.75, 39.8],
+    ru:{ name:'Нагорный Карабах', ctrl:'Азербайджан',
+      status:'Исторический пример. С 1990-х гг. здесь существовала непризнанная Нагорно-Карабахская Республика (Арцах). В 2023 г. территория перешла под контроль Азербайджана, республика упразднена с 1 января 2024 г. Международно признан частью Азербайджана.' },
+    en:{ name:'Nagorno-Karabakh', ctrl:'Azerbaijan',
+      status:'A historical example. From the 1990s the unrecognized Nagorno-Karabakh Republic (Artsakh) existed here. In 2023 the area came under Azerbaijani control and the republic was dissolved on 1 January 2024. It is internationally recognized as part of Azerbaijan.' } },
+
+  // ——— Территориальные споры между государствами ———
+  { id:'kashmir', group:'terr', ll:[75.5, 34.5],
+    ru:{ name:'Кашмир', ctrl:'Разделён между Индией, Пакистаном и Китаем',
+      status:'Спор с 1947 г. Индия контролирует Джамму и Кашмир и Ладакх, Пакистан — Азад Кашмир и Гилгит-Балтистан, Китай — Аксайчин. Индия и Пакистан претендуют на весь регион; между их частями — Линия контроля.' },
+    en:{ name:'Kashmir', ctrl:'Divided between India, Pakistan and China',
+      status:'Disputed since 1947. India controls Jammu and Kashmir and Ladakh, Pakistan controls Azad Kashmir and Gilgit-Baltistan, China controls Aksai Chin. India and Pakistan each claim the whole region; the Line of Control separates their parts.' } },
+  { id:'arunachal', group:'terr', ll:[94.0, 28.0],
+    ru:{ name:'Аруначал-Прадеш', ctrl:'Индия',
+      status:'Штат на северо-востоке Индии. Китай претендует на большую его часть, называя её «Южным Тибетом» (Цзаннань). Граница проходит по «линии Мак-Магона» 1914 г., которую Китай не признаёт.' },
+    en:{ name:'Arunachal Pradesh', ctrl:'India',
+      status:'A state in northeastern India. China claims most of it as “South Tibet” (Zangnan). The border follows the 1914 McMahon Line, which China does not recognize.' } },
+  { id:'crimea', group:'terr', ll:[34.2, 45.2],
+    ru:{ name:'Крым', ctrl:'Россия',
+      status:'С 2014 г. полуостров контролирует Россия, которая считает его своей территорией (Республика Крым и город Севастополь). Украина и большинство государств — членов ООН считают Крым частью Украины (резолюция Генассамблеи ООН 68/262).' },
+    en:{ name:'Crimea', ctrl:'Russia',
+      status:'Since 2014 the peninsula has been controlled by Russia, which regards it as its territory (the Republic of Crimea and the city of Sevastopol). Ukraine and most UN member states regard Crimea as part of Ukraine (UN General Assembly resolution 68/262).' } },
+  { id:'ukr4', group:'terr', ll:[37.2, 47.6],
+    ru:{ name:'Донецкая, Луганская, Запорожская и Херсонская области', ctrl:'Большей частью Россия',
+      status:'В 2022 г. Россия объявила о включении этих областей в свой состав; значительная часть их территории находится под её контролем. Украина и большинство государств — членов ООН это не признают и считают области частью Украины.' },
+    en:{ name:'Donetsk, Luhansk, Zaporizhzhia and Kherson oblasts', ctrl:'Mostly Russia',
+      status:'In 2022 Russia declared these regions part of its territory; much of their area is under its control. Ukraine and most UN member states do not recognize this and regard the regions as part of Ukraine.' } },
+  { id:'kurils', group:'terr', ll:[146.5, 43.95],
+    ru:{ name:'Южные Курилы', ctrl:'Россия',
+      status:'Итуруп, Кунашир, Шикотан и острова Хабомаи. С 1945 г. в составе СССР, затем России. Япония претендует на них как на «Северные территории»; из-за спора Россия и Япония так и не подписали мирный договор.' },
+    en:{ name:'Southern Kuril Islands', ctrl:'Russia',
+      status:'Iturup, Kunashir, Shikotan and the Habomai islets. Part of the USSR, then Russia, since 1945. Japan claims them as its “Northern Territories”; because of the dispute Russia and Japan have never signed a peace treaty.' } },
+  { id:'senkaku', group:'terr', ll:[123.5, 25.75],
+    ru:{ name:'Острова Сенкаку (Дяоюйдао)', ctrl:'Япония',
+      status:'Необитаемые острова в Восточно-Китайском море. Контролирует Япония; претендуют КНР и Тайвань.' },
+    en:{ name:'Senkaku (Diaoyu) Islands', ctrl:'Japan',
+      status:'Uninhabited islands in the East China Sea. Controlled by Japan; claimed by the PRC and Taiwan.' } },
+  { id:'dokdo', group:'terr', ll:[131.87, 37.24],
+    ru:{ name:'Острова Токто (Такэсима)', ctrl:'Республика Корея',
+      status:'Небольшие острова в Японском море. Контролирует Республика Корея; претендует Япония.' },
+    en:{ name:'Dokdo (Takeshima) Islands', ctrl:'South Korea',
+      status:'Small islets in the Sea of Japan. Controlled by South Korea; claimed by Japan.' } },
+  { id:'spratly', group:'terr', ll:[114.5, 10.0],
+    ru:{ name:'Острова Спратли', ctrl:'Разные острова у разных стран',
+      status:'Архипелаг в Южно-Китайском море. Претендуют полностью или частично КНР, Тайвань, Вьетнам, Филиппины, Малайзия и Бруней; отдельные острова занимают пять из них. В 2016 г. арбитраж в Гааге отклонил претензии КНР по «линии девяти пунктиров»; КНР решение не признаёт.' },
+    en:{ name:'Spratly Islands', ctrl:'Different islands held by different states',
+      status:'An archipelago in the South China Sea. Claimed in whole or in part by the PRC, Taiwan, Vietnam, the Philippines, Malaysia and Brunei; five of them occupy individual features. In 2016 a tribunal in The Hague rejected the PRC’s “nine-dash line” claims; the PRC does not accept the ruling.' } },
+  { id:'paracel', group:'terr', ll:[112.0, 16.5],
+    ru:{ name:'Парасельские острова', ctrl:'Китай (КНР)',
+      status:'Архипелаг в Южно-Китайском море. С 1974 г. полностью контролирует КНР; претендуют Вьетнам и Тайвань.' },
+    en:{ name:'Paracel Islands', ctrl:'China (PRC)',
+      status:'An archipelago in the South China Sea. Fully controlled by the PRC since 1974; claimed by Vietnam and Taiwan.' } },
+  { id:'golan', group:'terr', ll:[35.8, 33.0],
+    ru:{ name:'Голанские высоты', ctrl:'Израиль',
+      status:'Сирийская территория, занятая Израилем в 1967 г. и аннексированная в 1981 г. Аннексию признали только США (2019). ООН и большинство государств считают Голаны оккупированной территорией Сирии.' },
+    en:{ name:'Golan Heights', ctrl:'Israel',
+      status:'Syrian territory occupied by Israel in 1967 and annexed in 1981. Only the USA (2019) has recognized the annexation. The UN and most states regard the Golan as occupied Syrian territory.' } },
+  { id:'abumusa', group:'terr', ll:[55.0, 25.9],
+    ru:{ name:'Абу-Муса и острова Томб', ctrl:'Иран',
+      status:'Острова в Персидском заливе у Ормузского пролива. С 1971 г. контролирует Иран; претендуют ОАЭ.' },
+    en:{ name:'Abu Musa and the Tunbs', ctrl:'Iran',
+      status:'Islands in the Persian Gulf near the Strait of Hormuz. Controlled by Iran since 1971; claimed by the UAE.' } },
+  { id:'halaib', group:'terr', ll:[35.8, 22.6],
+    ru:{ name:'Треугольник Халаиб', ctrl:'Египет',
+      status:'Участок на побережье Красного моря. Контролирует Египет; претендует Судан. Рядом лежит Бир-Тавиль — редкий пример ничейной земли.' },
+    en:{ name:'Hala’ib Triangle', ctrl:'Egypt',
+      status:'A stretch of the Red Sea coast. Controlled by Egypt; claimed by Sudan. Next to it lies Bir Tawil, a rare example of unclaimed land.' } },
+  { id:'birtawil', group:'terr', ll:[33.75, 21.87],
+    ru:{ name:'Бир-Тавиль', ctrl:'Никто (ничейная земля)',
+      status:'Участок пустыни между Египтом и Суданом, на который не претендует ни одно государство — следствие расхождения границ 1899 и 1902 гг.: каждая страна претендует на Халаиб, а не на Бир-Тавиль.' },
+    en:{ name:'Bir Tawil', ctrl:'Nobody (unclaimed land)',
+      status:'A desert area between Egypt and Sudan claimed by no state — a result of the mismatch between the 1899 and 1902 borders: each country claims Hala’ib instead of Bir Tawil.' } },
+  { id:'ceuta', group:'terr', ll:[-2.94, 35.29],
+    ru:{ name:'Сеута и Мелилья', ctrl:'Испания',
+      status:'Испанские города-анклавы на побережье Северной Африки. Марокко претендует на них.' },
+    en:{ name:'Ceuta and Melilla', ctrl:'Spain',
+      status:'Spanish enclave cities on the North African coast. Morocco claims them.' } },
+  { id:'gibraltar', group:'terr', ll:[-5.35, 36.14],
+    ru:{ name:'Гибралтар', ctrl:'Великобритания',
+      status:'Британская заморская территория на юге Пиренейского полуострова (с 1713 г.). Испания претендует на неё; жители на референдумах голосовали за сохранение британского статуса.' },
+    en:{ name:'Gibraltar', ctrl:'United Kingdom',
+      status:'A British Overseas Territory at the southern tip of the Iberian Peninsula (since 1713). Spain claims it; residents have voted in referendums to remain British.' } },
+  { id:'falklands', group:'terr', ll:[-59.5, -51.7],
+    ru:{ name:'Фолклендские (Мальвинские) острова', ctrl:'Великобритания',
+      status:'Британская заморская территория в Южной Атлантике. Аргентина претендует на острова; в 1982 г. из-за них шла война. На референдуме 2013 г. 99,8% жителей высказались за сохранение британского статуса.' },
+    en:{ name:'Falkland Islands (Malvinas)', ctrl:'United Kingdom',
+      status:'A British Overseas Territory in the South Atlantic. Argentina claims the islands; a war was fought over them in 1982. In a 2013 referendum, 99.8% of residents voted to remain British.' } },
+  { id:'essequibo', group:'terr', ll:[-59.5, 6.0],
+    ru:{ name:'Гуаяна-Эссекибо', ctrl:'Гайана',
+      status:'Территория к западу от реки Эссекибо, около двух третей площади Гайаны. Управляется Гайаной; Венесуэла претендует на неё (в 2023 г. провела референдум). Спор рассматривает Международный суд ООН.' },
+    en:{ name:'Guayana Esequiba', ctrl:'Guyana',
+      status:'The land west of the Essequibo River, about two-thirds of Guyana’s area. Administered by Guyana; claimed by Venezuela (which held a referendum in 2023). The dispute is before the International Court of Justice.' } },
+  { id:'mayotte', group:'terr', ll:[45.15, -12.8],
+    ru:{ name:'Майотта', ctrl:'Франция',
+      status:'Остров в Коморском архипелаге. На референдумах 1974 и 1976 гг. жители выбрали остаться с Францией; с 2011 г. — заморский департамент Франции. Коморы претендуют на остров.' },
+    en:{ name:'Mayotte', ctrl:'France',
+      status:'An island in the Comoros archipelago. In the 1974 and 1976 referendums residents chose to stay with France; an overseas department of France since 2011. The Comoros claim the island.' } },
+  { id:'chagos', group:'terr', ll:[72.4, -7.3],
+    ru:{ name:'Острова Чагос', ctrl:'Великобритания',
+      status:'Британская территория в Индийском океане с военной базой США на атолле Диего-Гарсия. Маврикий претендует на архипелаг; в 2019 г. Международный суд ООН высказался в его пользу. В 2025 г. Великобритания и Маврикий подписали договор о передаче суверенитета Маврикию с сохранением базы в аренде.' },
+    en:{ name:'Chagos Islands', ctrl:'United Kingdom',
+      status:'The British Indian Ocean Territory, with a US military base on Diego Garcia. Mauritius claims the archipelago; in 2019 the International Court of Justice advised in its favour. In 2025 the UK and Mauritius signed a treaty transferring sovereignty to Mauritius while keeping the base under lease.' } },
+  { id:'antarctica', group:'terr', ll:[0, -80],
+    ru:{ name:'Антарктида', ctrl:'Никто (международный режим)',
+      status:'Семь государств (Аргентина, Австралия, Великобритания, Новая Зеландия, Норвегия, Франция, Чили) заявляли претензии на секторы Антарктиды, частично перекрывающиеся. Договор об Антарктике 1959 г. заморозил все претензии; континент используется только в мирных целях.' },
+    en:{ name:'Antarctica', ctrl:'Nobody (international regime)',
+      status:'Seven states (Argentina, Australia, Chile, France, New Zealand, Norway, the UK) have claimed sectors of Antarctica, some of them overlapping. The 1959 Antarctic Treaty froze all claims; the continent is used for peaceful purposes only.' } },
 ];
 
 </script>
@@ -1737,6 +1906,11 @@ const straitInfo = k => {
 };
 const straitPins = () => STRAITS.map((s, i) => ({ key: 's' + i, lonlat: s[1], label: straitName('s' + i) }));
 
+const dispT = i => DISPUTES[i][LANG] || DISPUTES[i].ru;
+const disputeName = k => dispT(+k.slice(1)).name;
+const disputeInfo = k => dispT(+k.slice(1)).status;
+const disputePins = () => DISPUTES.map((d, i) => ({ key: 'd' + i, lonlat: d.ll, label: dispT(i).name }));
+
 const topicName = n => L(TOPICS[n], TOPICS_EN[n]);
 const quizQ = i => {
   const q = QUIZ[i];
@@ -1850,23 +2024,31 @@ function GeoMap(el, o) {
     .on('zoom', ev => { T = ev.transform; g.attr('transform', T); rescale(); });
   svg.call(zoom).on('dblclick.zoom', null);
   let resizeT;
+  const winLandscape = () => window.innerWidth > window.innerHeight;
+  let wasLandscape = winLandscape();
   const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
     clearTimeout(resizeT);
     resizeT = setTimeout(() => {
       if (!el.isConnected) { ro.disconnect(); return; }
       const W2 = Math.max(el.clientWidth, 200), H2 = Math.max(el.clientHeight, 160);
       if (Math.abs(W2 - W) < 2 && Math.abs(H2 - H) < 2) return;
-      const flipped = (W > H) !== (W2 > H2);
+      const dx = (W2 - W) / 2, dy = (H2 - H) / 2;
       W = W2; H = H2;
       svg.attr('viewBox', `0 0 ${W} ${H}`);
       zoom.extent([[0, 0], [W, H]]).translateExtent([[-W, -H], [2 * W, 2 * H]]);
-      if (flipped) fitView(home, false);
+      const rotated = winLandscape() !== wasLandscape;
+      wasLandscape = winLandscape();
+      if (rotated) fitView(home, false); // телефон повернули — показываем исходный вид
+      else if (anim && Date.now() < anim.until) apply(anim.k, anim.cx, anim.cy, false); // идёт приближение — сразу к цели
+      else svg.call(zoom.transform, d3.zoomIdentity.translate(T.x + dx, T.y + dy).scale(T.k)); // центр карты остаётся на месте
     }, 150);
   }) : null;
   if (ro) ro.observe(el);
   rescale();
 
+  let anim = null; // цель текущей анимации масштаба
   function apply(k, cx, cy, animate) {
+    anim = animate ? { k, cx, cy, until: Date.now() + 700 } : null;
     const t = d3.zoomIdentity.translate(W / 2 - k * cx, H / 2 - k * cy).scale(k);
     if (animate) svg.transition().duration(650).call(zoom.transform, t); else svg.call(zoom.transform, t);
   }
@@ -1891,7 +2073,7 @@ function GeoMap(el, o) {
     return proj(d3.geoCentroid(ps[0]));
   }
   function keyBounds(k) {
-    if (MICRO[k] || k[0] === 's') return null;
+    if (MICRO[k] || pinData.some(p => p.key === k)) return null;
     const ps = polysOf(k); if (!ps.length) return null;
     let b = null;
     for (const p of ps) {
@@ -2030,6 +2212,7 @@ function playFind(cfg) {
       else map.tip(L('Нажмите на подсвеченный: ', 'Tap the highlighted one: ') + nm(target), ev, 'bad');
       return;
     }
+    if (k !== target && res[k] !== undefined) { map.tip(nm(k), ev, '', 1200); return; } // уже отгадана — просто подпись
     if (k === target) {
       res[target] = tries; map.add(target, 'ok' + (tries + 1)); map.tip(nm(k), ev, 'good', 900);
       i++; ask();
@@ -2217,11 +2400,12 @@ function Home() {
       <button class="tile" data-go="regions"><span class="ico">🗺️</span><b>${L('Регионы и страны', 'Regions and countries')}</b><small>${L('Регионы из билетов и части света', 'Exam regions and continents')}</small></button>
       <button class="tile" data-go="quiz"><span class="ico">📝</span><b>${L('Викторина по билетам', 'Exam quiz')}</b><small>${L(`${QUIZ.length} вопросов с вариантами ответов по 25 темам`, `${QUIZ.length} multiple-choice questions on 25 topics`)}</small></button>
       <button class="tile" data-go="guess"><span class="ico">🧩</span><b>${L('Угадай организацию', 'Guess the organization')}</b><small>${L('На карте выделены участники — назовите объединение', 'Members are highlighted on the map — name the group')}</small></button>
-      <button class="tile" data-go="stats"><span class="ico">🏆</span><b>${L('Мои результаты', 'My results')}</b><small>${L('Лучшие результаты во всех режимах', 'Your best scores in every mode')}</small></button>
+      <button class="tile" data-go="disputes"><span class="ico">⚖️</span><b>${L('Спорные территории', 'Disputed territories')}</b><small>${L('Частично признанные государства и территориальные споры', 'Partially recognized states and territorial disputes')}</small></button>
+      <button class="tile wide" data-go="stats"><span class="ico">🏆</span><span><b>${L('Мои результаты', 'My results')}</b><small>${L('Лучшие результаты во всех режимах', 'Your best scores in every mode')}</small></span></button>
     </div>
     <p class="note" style="text-align:center;margin-top:22px">${L('Карта: приближайте колёсиком мыши или двумя пальцами, перемещайте перетаскиванием. Маленькие государства показаны кружками.', 'Map: zoom with the mouse wheel or two fingers, drag to pan. Very small states are shown as circles.')}</p>
   </div></div>`;
-  const routes = { guess: GuessMenu, stats: Stats, orgs: OrgList, gov: () => GovMenu('gov'), fed: () => GovMenu('fed'), straits: StraitMenu, regions: RegionList, quiz: QuizMenu };
+  const routes = { disputes: DisputeMenu, guess: GuessMenu, stats: Stats, orgs: OrgList, gov: () => GovMenu('gov'), fed: () => GovMenu('fed'), straits: StraitMenu, regions: RegionList, quiz: QuizMenu };
   app.querySelectorAll('[data-go]').forEach(b => { b.onclick = () => go(routes[b.dataset.go]); });
   app.querySelectorAll('[data-lang]').forEach(b => {
     b.onclick = () => {
@@ -2385,6 +2569,57 @@ function StraitMenu() {
       study: () => go(playStudy, { title, pins, labels: true, nameOf: straitName, infoOf: straitInfo, chips: pins.map(p => p.key) }),
       find: () => go(playFind, { id: 'str:find:' + straitState.count, title, keys: pick(), pins, nameOf: straitName, infoOf: straitInfo, verb: L('Найдите пролив', 'Find the strait') }),
       choose: () => go(playChoose, { id: 'str:choose:' + straitState.count, title, pins, nameOf: straitName, items: makeItems(), regen: makeItems }),
+    };
+    app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
+  };
+  render();
+}
+
+// ===================== Спорные территории =====================
+const disputeState = { count: 10 };
+function DisputeMenu() {
+  const render = () => {
+    const title = L('Спорные территории', 'Disputed territories');
+    const pins = disputePins();
+    const stateKeys = pins.filter((p, i) => DISPUTES[i].group === 'state').map(p => p.key);
+    const terrKeys = pins.filter((p, i) => DISPUTES[i].group === 'terr').map(p => p.key);
+    app.innerHTML = `${topbar(title)}<div class="page"><div class="wrap">
+      <div class="info-card">
+        <p>${L('Территории, статус которых признают не все государства: частично признанные и непризнанные государства, а также земли, на которые претендуют сразу несколько стран.', 'Places whose status not every state accepts: partially recognized and unrecognized states, and lands claimed by more than one country.')}</p>
+        <p class="members">${L(`${stateKeys.length} государств и ${terrKeys.length} территорий. Для каждой указано, кто фактически её контролирует и кто на неё претендует. Данные — на 2025 г.`, `${stateKeys.length} states and ${terrKeys.length} territories. Each entry says who actually controls it and who claims it. Data as of 2025.`)}</p>
+      </div>
+      <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
+      <div class="chips">${[10, 20, 0].map(c => `<button class="chip ${c === disputeState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All') + ' (' + pins.length + ')'}</button>`).join('')}</div>
+      <div class="modes">
+        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Все территории с подписями и справкой', 'Every territory with a label and a profile')}</small></span></button>
+        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди территорию', 'Find the territory')}</div><small>${L('Называется территория — нажмите на нужную точку', 'A territory is named — tap its marker')}</small></span><span class="best">${best('disp:find:' + disputeState.count)}</span></button>
+        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${L('Что это за территория?', 'Name the territory')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('disp:choose:' + disputeState.count)}</span></button>
+        <button class="mode" data-m="ctrl"><span class="ico">🏳️</span><span class="txt"><div>${L('Кто контролирует?', 'Who controls it?')}</div><small>${L('Выберите, кто фактически управляет территорией', 'Pick who actually governs the territory')}</small></span><span class="best">${best('disp:ctrl:' + disputeState.count)}</span></button>
+      </div>
+    </div></div>`;
+    bindBack();
+    app.querySelectorAll('[data-c]').forEach(b => { b.onclick = () => { disputeState.count = +b.dataset.c; render(); }; });
+    const pick = () => { const all = pins.map(p => p.key); return disputeState.count ? sample(all, disputeState.count) : shuffle(all); };
+    const nameItems = () => pick().map(k => {
+      const wrong = sample(pins.filter(p => p.key !== k).map(p => p.label), 3);
+      return { key: k, q: L('Что это за территория?', 'Which territory is this?'), correct: disputeName(k), options: shuffle([disputeName(k), ...wrong]), info: disputeInfo(k) };
+    });
+    const ctrlOf = k => dispT(+k.slice(1)).ctrl;
+    const allCtrl = [...new Set(pins.map(p => ctrlOf(p.key)))];
+    const ctrlItems = () => pick().map(k => {
+      const right = ctrlOf(k);
+      const wrong = sample(allCtrl.filter(c => c !== right), 3);
+      return { key: k, q: `${L('Кто фактически контролирует территорию', 'Who actually controls this territory')}: <b>${esc(disputeName(k))}</b>`, correct: right, options: shuffle([right, ...wrong]), info: disputeInfo(k) };
+    });
+    const acts = {
+      study: () => go(playStudy, { title, pins, labels: true, nameOf: disputeName, infoOf: disputeInfo, chips: pins.map(p => p.key),
+        groups: [
+          { cls: 'g-state', label: L('Частично признанные и непризнанные государства', 'Partially recognized and unrecognized states'), color: '#8e5ec9', keys: stateKeys },
+          { cls: 'g-terr', label: L('Территориальные споры', 'Territorial disputes'), color: '#d9534f', keys: terrKeys },
+        ] }),
+      find: () => go(playFind, { id: 'disp:find:' + disputeState.count, title, keys: pick(), pins, nameOf: disputeName, infoOf: disputeInfo, verb: L('Найдите', 'Find') }),
+      choose: () => go(playChoose, { id: 'disp:choose:' + disputeState.count, title, pins, nameOf: disputeName, items: nameItems(), regen: nameItems }),
+      ctrl: () => go(playChoose, { id: 'disp:ctrl:' + disputeState.count, title, modeLabel: L('кто контролирует', 'who controls it'), pins, nameOf: disputeName, items: ctrlItems(), regen: ctrlItems }),
     };
     app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
   };

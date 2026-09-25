@@ -107,6 +107,11 @@ const straitInfo = k => {
 };
 const straitPins = () => STRAITS.map((s, i) => ({ key: 's' + i, lonlat: s[1], label: straitName('s' + i) }));
 
+const dispT = i => DISPUTES[i][LANG] || DISPUTES[i].ru;
+const disputeName = k => dispT(+k.slice(1)).name;
+const disputeInfo = k => dispT(+k.slice(1)).status;
+const disputePins = () => DISPUTES.map((d, i) => ({ key: 'd' + i, lonlat: d.ll, label: dispT(i).name }));
+
 const topicName = n => L(TOPICS[n], TOPICS_EN[n]);
 const quizQ = i => {
   const q = QUIZ[i];
@@ -220,23 +225,31 @@ function GeoMap(el, o) {
     .on('zoom', ev => { T = ev.transform; g.attr('transform', T); rescale(); });
   svg.call(zoom).on('dblclick.zoom', null);
   let resizeT;
+  const winLandscape = () => window.innerWidth > window.innerHeight;
+  let wasLandscape = winLandscape();
   const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
     clearTimeout(resizeT);
     resizeT = setTimeout(() => {
       if (!el.isConnected) { ro.disconnect(); return; }
       const W2 = Math.max(el.clientWidth, 200), H2 = Math.max(el.clientHeight, 160);
       if (Math.abs(W2 - W) < 2 && Math.abs(H2 - H) < 2) return;
-      const flipped = (W > H) !== (W2 > H2);
+      const dx = (W2 - W) / 2, dy = (H2 - H) / 2;
       W = W2; H = H2;
       svg.attr('viewBox', `0 0 ${W} ${H}`);
       zoom.extent([[0, 0], [W, H]]).translateExtent([[-W, -H], [2 * W, 2 * H]]);
-      if (flipped) fitView(home, false);
+      const rotated = winLandscape() !== wasLandscape;
+      wasLandscape = winLandscape();
+      if (rotated) fitView(home, false); // телефон повернули — показываем исходный вид
+      else if (anim && Date.now() < anim.until) apply(anim.k, anim.cx, anim.cy, false); // идёт приближение — сразу к цели
+      else svg.call(zoom.transform, d3.zoomIdentity.translate(T.x + dx, T.y + dy).scale(T.k)); // центр карты остаётся на месте
     }, 150);
   }) : null;
   if (ro) ro.observe(el);
   rescale();
 
+  let anim = null; // цель текущей анимации масштаба
   function apply(k, cx, cy, animate) {
+    anim = animate ? { k, cx, cy, until: Date.now() + 700 } : null;
     const t = d3.zoomIdentity.translate(W / 2 - k * cx, H / 2 - k * cy).scale(k);
     if (animate) svg.transition().duration(650).call(zoom.transform, t); else svg.call(zoom.transform, t);
   }
@@ -261,7 +274,7 @@ function GeoMap(el, o) {
     return proj(d3.geoCentroid(ps[0]));
   }
   function keyBounds(k) {
-    if (MICRO[k] || k[0] === 's') return null;
+    if (MICRO[k] || pinData.some(p => p.key === k)) return null;
     const ps = polysOf(k); if (!ps.length) return null;
     let b = null;
     for (const p of ps) {
@@ -400,6 +413,7 @@ function playFind(cfg) {
       else map.tip(L('Нажмите на подсвеченный: ', 'Tap the highlighted one: ') + nm(target), ev, 'bad');
       return;
     }
+    if (k !== target && res[k] !== undefined) { map.tip(nm(k), ev, '', 1200); return; } // уже отгадана — просто подпись
     if (k === target) {
       res[target] = tries; map.add(target, 'ok' + (tries + 1)); map.tip(nm(k), ev, 'good', 900);
       i++; ask();
@@ -587,11 +601,12 @@ function Home() {
       <button class="tile" data-go="regions"><span class="ico">🗺️</span><b>${L('Регионы и страны', 'Regions and countries')}</b><small>${L('Регионы из билетов и части света', 'Exam regions and continents')}</small></button>
       <button class="tile" data-go="quiz"><span class="ico">📝</span><b>${L('Викторина по билетам', 'Exam quiz')}</b><small>${L(`${QUIZ.length} вопросов с вариантами ответов по 25 темам`, `${QUIZ.length} multiple-choice questions on 25 topics`)}</small></button>
       <button class="tile" data-go="guess"><span class="ico">🧩</span><b>${L('Угадай организацию', 'Guess the organization')}</b><small>${L('На карте выделены участники — назовите объединение', 'Members are highlighted on the map — name the group')}</small></button>
-      <button class="tile" data-go="stats"><span class="ico">🏆</span><b>${L('Мои результаты', 'My results')}</b><small>${L('Лучшие результаты во всех режимах', 'Your best scores in every mode')}</small></button>
+      <button class="tile" data-go="disputes"><span class="ico">⚖️</span><b>${L('Спорные территории', 'Disputed territories')}</b><small>${L('Частично признанные государства и территориальные споры', 'Partially recognized states and territorial disputes')}</small></button>
+      <button class="tile wide" data-go="stats"><span class="ico">🏆</span><span><b>${L('Мои результаты', 'My results')}</b><small>${L('Лучшие результаты во всех режимах', 'Your best scores in every mode')}</small></span></button>
     </div>
     <p class="note" style="text-align:center;margin-top:22px">${L('Карта: приближайте колёсиком мыши или двумя пальцами, перемещайте перетаскиванием. Маленькие государства показаны кружками.', 'Map: zoom with the mouse wheel or two fingers, drag to pan. Very small states are shown as circles.')}</p>
   </div></div>`;
-  const routes = { guess: GuessMenu, stats: Stats, orgs: OrgList, gov: () => GovMenu('gov'), fed: () => GovMenu('fed'), straits: StraitMenu, regions: RegionList, quiz: QuizMenu };
+  const routes = { disputes: DisputeMenu, guess: GuessMenu, stats: Stats, orgs: OrgList, gov: () => GovMenu('gov'), fed: () => GovMenu('fed'), straits: StraitMenu, regions: RegionList, quiz: QuizMenu };
   app.querySelectorAll('[data-go]').forEach(b => { b.onclick = () => go(routes[b.dataset.go]); });
   app.querySelectorAll('[data-lang]').forEach(b => {
     b.onclick = () => {
@@ -755,6 +770,57 @@ function StraitMenu() {
       study: () => go(playStudy, { title, pins, labels: true, nameOf: straitName, infoOf: straitInfo, chips: pins.map(p => p.key) }),
       find: () => go(playFind, { id: 'str:find:' + straitState.count, title, keys: pick(), pins, nameOf: straitName, infoOf: straitInfo, verb: L('Найдите пролив', 'Find the strait') }),
       choose: () => go(playChoose, { id: 'str:choose:' + straitState.count, title, pins, nameOf: straitName, items: makeItems(), regen: makeItems }),
+    };
+    app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
+  };
+  render();
+}
+
+// ===================== Спорные территории =====================
+const disputeState = { count: 10 };
+function DisputeMenu() {
+  const render = () => {
+    const title = L('Спорные территории', 'Disputed territories');
+    const pins = disputePins();
+    const stateKeys = pins.filter((p, i) => DISPUTES[i].group === 'state').map(p => p.key);
+    const terrKeys = pins.filter((p, i) => DISPUTES[i].group === 'terr').map(p => p.key);
+    app.innerHTML = `${topbar(title)}<div class="page"><div class="wrap">
+      <div class="info-card">
+        <p>${L('Территории, статус которых признают не все государства: частично признанные и непризнанные государства, а также земли, на которые претендуют сразу несколько стран.', 'Places whose status not every state accepts: partially recognized and unrecognized states, and lands claimed by more than one country.')}</p>
+        <p class="members">${L(`${stateKeys.length} государств и ${terrKeys.length} территорий. Для каждой указано, кто фактически её контролирует и кто на неё претендует. Данные — на 2025 г.`, `${stateKeys.length} states and ${terrKeys.length} territories. Each entry says who actually controls it and who claims it. Data as of 2025.`)}</p>
+      </div>
+      <div class="section-title">${L('Количество вопросов', 'Number of questions')}</div>
+      <div class="chips">${[10, 20, 0].map(c => `<button class="chip ${c === disputeState.count ? 'on' : ''}" data-c="${c}">${c || L('Все', 'All') + ' (' + pins.length + ')'}</button>`).join('')}</div>
+      <div class="modes">
+        <button class="mode" data-m="study"><span class="ico">🔍</span><span class="txt"><div>${L('Изучить карту', 'Study the map')}</div><small>${L('Все территории с подписями и справкой', 'Every territory with a label and a profile')}</small></span></button>
+        <button class="mode" data-m="find"><span class="ico">📍</span><span class="txt"><div>${L('Найди территорию', 'Find the territory')}</div><small>${L('Называется территория — нажмите на нужную точку', 'A territory is named — tap its marker')}</small></span><span class="best">${best('disp:find:' + disputeState.count)}</span></button>
+        <button class="mode" data-m="choose"><span class="ico">❓</span><span class="txt"><div>${L('Что это за территория?', 'Name the territory')}</div><small>${L('Точка подсвечена — выберите название из 4 вариантов', 'A marker is highlighted — pick its name from 4 options')}</small></span><span class="best">${best('disp:choose:' + disputeState.count)}</span></button>
+        <button class="mode" data-m="ctrl"><span class="ico">🏳️</span><span class="txt"><div>${L('Кто контролирует?', 'Who controls it?')}</div><small>${L('Выберите, кто фактически управляет территорией', 'Pick who actually governs the territory')}</small></span><span class="best">${best('disp:ctrl:' + disputeState.count)}</span></button>
+      </div>
+    </div></div>`;
+    bindBack();
+    app.querySelectorAll('[data-c]').forEach(b => { b.onclick = () => { disputeState.count = +b.dataset.c; render(); }; });
+    const pick = () => { const all = pins.map(p => p.key); return disputeState.count ? sample(all, disputeState.count) : shuffle(all); };
+    const nameItems = () => pick().map(k => {
+      const wrong = sample(pins.filter(p => p.key !== k).map(p => p.label), 3);
+      return { key: k, q: L('Что это за территория?', 'Which territory is this?'), correct: disputeName(k), options: shuffle([disputeName(k), ...wrong]), info: disputeInfo(k) };
+    });
+    const ctrlOf = k => dispT(+k.slice(1)).ctrl;
+    const allCtrl = [...new Set(pins.map(p => ctrlOf(p.key)))];
+    const ctrlItems = () => pick().map(k => {
+      const right = ctrlOf(k);
+      const wrong = sample(allCtrl.filter(c => c !== right), 3);
+      return { key: k, q: `${L('Кто фактически контролирует территорию', 'Who actually controls this territory')}: <b>${esc(disputeName(k))}</b>`, correct: right, options: shuffle([right, ...wrong]), info: disputeInfo(k) };
+    });
+    const acts = {
+      study: () => go(playStudy, { title, pins, labels: true, nameOf: disputeName, infoOf: disputeInfo, chips: pins.map(p => p.key),
+        groups: [
+          { cls: 'g-state', label: L('Частично признанные и непризнанные государства', 'Partially recognized and unrecognized states'), color: '#8e5ec9', keys: stateKeys },
+          { cls: 'g-terr', label: L('Территориальные споры', 'Territorial disputes'), color: '#d9534f', keys: terrKeys },
+        ] }),
+      find: () => go(playFind, { id: 'disp:find:' + disputeState.count, title, keys: pick(), pins, nameOf: disputeName, infoOf: disputeInfo, verb: L('Найдите', 'Find') }),
+      choose: () => go(playChoose, { id: 'disp:choose:' + disputeState.count, title, pins, nameOf: disputeName, items: nameItems(), regen: nameItems }),
+      ctrl: () => go(playChoose, { id: 'disp:ctrl:' + disputeState.count, title, modeLabel: L('кто контролирует', 'who controls it'), pins, nameOf: disputeName, items: ctrlItems(), regen: ctrlItems }),
     };
     app.querySelectorAll('[data-m]').forEach(b => { b.onclick = acts[b.dataset.m]; });
   };

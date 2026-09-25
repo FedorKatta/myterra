@@ -278,3 +278,10 @@ button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 3px so
 .lang-switch { display: flex; flex: none; background: rgba(255,255,255,.15); border-radius: 10px; padding: 3px; gap: 2px; }
 .lang-switch button { border: 0; background: transparent; color: #fff; font-weight: 700; font-size: 13px; letter-spacing: .04em; padding: 6px 10px; border-radius: 7px; min-width: 40px; }
 .lang-switch button[aria-pressed="true"] { background: #fff; color: var(--primary); }
+
+/* ——— Спорные территории и широкая плитка ——— */
+.pin.g-state { stroke: #8e5ec9; }
+.pin.g-terr { stroke: #d9534f; }
+.tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 14px; min-height: 0; }
+.tile.wide > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.prompt { max-height: 34vh; overflow-y: auto; }
