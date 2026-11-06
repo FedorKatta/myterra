@@ -67,7 +67,7 @@ window.ORGS_EN = {
   oas: { short:'OAS', name:'Organization of American States',
     info:'Founded in 1948. Headquarters: Washington, D.C. Brings together all 35 independent states of the Americas. Nicaragua left in 2023; Cuba is formally a member but has not taken part since 1962; Venezuela announced its withdrawal in 2017.' },
   opec: { short:'OPEC', name:'Organization of the Petroleum Exporting Countries',
-    info:'Founded in 1960 (Baghdad). Headquarters: Vienna. 12 members. Angola left in 2024, Qatar in 2019, Ecuador in 2020. Russia takes part in OPEC+ but is not an OPEC member.' },
+    info:'Founded in 1960 (Baghdad). Headquarters: Vienna. 11 members. The UAE left OPEC and OPEC+ on 1 May 2026, Angola in 2024, Qatar in 2019, Ecuador in 2020. Russia takes part in OPEC+ but is not an OPEC member.' },
   csto: { short:'CSTO', name:'Collective Security Treaty Organization',
     info:'Treaty signed in 1992, organization since 2002. Secretariat: Moscow. Armenia “froze” its participation in 2024.' },
   saarc: { short:'SAARC', name:'South Asian Association for Regional Cooperation',
