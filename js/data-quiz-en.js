@@ -33,8 +33,8 @@ window.QUIZ_EN = [
 [2,'Which is the smallest state in the world by area?','Vatican City',['Monaco','Nauru','San Marino'],'The Vatican covers about 0.44 km²; Monaco about 2 km².'],
 // ——— 3 ———
 [3,'Roughly how many monarchies are there in the world today?','About 40 (43)',['About 10','About 25','About 70'],'43 monarchies, 15 of which are Commonwealth realms headed by the British monarch.'],
-[3,'Which state is an absolute monarchy?','Oman',['United Kingdom','Spain','Japan'],'Absolute monarchies: Saudi Arabia, Oman, Qatar, the UAE, Brunei, Eswatini.'],
-[3,'Which state is a theocratic monarchy?','Vatican City',['Iran','Nepal','Bhutan'],'The head of the Vatican is the Pope. Iran is an Islamic republic; Nepal has been a republic since 2008.'],
+[3,'Which state is an absolute monarchy?','Oman',['United Kingdom','Spain','Japan'],'Absolute monarchies: Oman, Qatar, the UAE, Eswatini; the theocratic Saudi Arabia and Brunei are absolute too.'],
+[3,'Which state is a theocratic monarchy?','Vatican City',['Iran','Nepal','Bhutan'],'Theocratic monarchies: Vatican City (headed by the Pope), Saudi Arabia, Brunei. Iran is an Islamic republic; Nepal has been a republic since 2008.'],
 [3,'Which of these states is a republic?','France',['Netherlands','Belgium','Sweden'],'The Netherlands, Belgium and Sweden are constitutional monarchies.'],
 [3,'In which country is the British monarch head of state?','Canada',['India','South Africa','Ireland'],'Commonwealth realms: Canada, Australia, New Zealand, Jamaica, the Bahamas and others (15 including the UK).'],
 [3,'Which republic is parliamentary?','Germany',['United States','Brazil','Mexico'],'In a parliamentary republic the government is formed by parliament; the president has mostly ceremonial functions.'],

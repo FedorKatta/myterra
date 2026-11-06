@@ -111,11 +111,12 @@ window.GOV_LABELS_EN = { rep:'Republic', const:'Constitutional monarchy', abs:'A
 const REALM_EN = 'the British monarch (represented by a governor-general); a Commonwealth realm';
 // Head-of-state notes, keyed by the Russian country name (as in MONARCHIES)
 window.MONARCHY_EN = {
-  'Саудовская Аравия':'a king; an absolute monarchy with a theocratic character (law based on Sharia)',
-  'Оман':'a sultan', 'Бруней':'a sultan', 'Катар':'an emir',
+  'Оман':'a sultan', 'Катар':'an emir',
   'ОАЭ':'a federation of 7 emirates (absolute monarchies); the president is chosen from among the emirs',
   'Эсватини':'a king',
   'Ватикан':'the Pope, head of the Roman Catholic Church',
+  'Саудовская Аравия':'a king; law is based on Sharia and the Quran serves as the constitution; also an absolute monarchy',
+  'Бруней':'a sultan, who is also head of Islam in the country; Sharia law applies; also an absolute monarchy',
   'Великобритания':'a king', 'Норвегия':'a king', 'Швеция':'a king', 'Дания':'a king', 'Нидерланды':'a king', 'Бельгия':'a king',
   'Испания':'a king', 'Люксембург':'a grand duke', 'Лихтенштейн':'a prince', 'Монако':'a prince',
   'Андорра':'two co-princes: the President of France and the Bishop of Urgell (Spain)',
@@ -148,7 +149,7 @@ window.FEDERATIONS_EN = {
   'Швейцария':'26 cantons', 'Бельгия':'3 regions and 3 language communities',
   'Босния и Герцеговина':'the Federation of BiH, Republika Srpska and the Brčko District',
   'Индия':'28 states and 8 union territories', 'Пакистан':'4 provinces and territories', 'Непал':'7 provinces (a federation since 2015)',
-  'Малайзия':'13 states and 3 federal territories', 'Мьянма':'regions and ethnic states',
+  'Малайзия':'13 states and 3 federal territories',
   'Ирак':'governorates and the autonomous Kurdistan Region', 'ОАЭ':'7 emirates', 'Австралия':'6 states and territories',
   'Нигерия':'36 states and the Federal Capital Territory', 'Эфиопия':'regions drawn along ethnic lines', 'Сомали':'federal member states',
   'Южный Судан':'states', 'Судан':'states', 'Коморы':'3 islands (Union of the Comoros)',
@@ -161,6 +162,7 @@ window.UNITARY_NOTES_EN = {
   'Китай':'unitary state: provinces, autonomous regions, municipalities and the Hong Kong and Macao SARs',
   'Япония':'unitary state: 47 prefectures', 'Казахстан':'unitary state: regions and cities of national significance',
   'Польша':'unitary state: 16 voivodeships', 'Индонезия':'unitary state: provinces',
+  'Мьянма':'unitary state (under the 2008 Constitution): 7 regions and 7 ethnic states',
 };
 
 // Straits, in the same order as STRAITS: [name, connects, separates]
