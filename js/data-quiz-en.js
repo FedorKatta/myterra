@@ -55,6 +55,7 @@ window.QUIZ_EN = [
 [3,'Which country became a full SCO member in 2024?','Belarus',['Iran','Turkey','Mongolia'],'Iran joined the SCO in 2023, Belarus in 2024.'],
 [3,'Which of these countries is an OPEC member?','Venezuela',['Russia','Mexico','Norway'],'Russia and Mexico take part in OPEC+ but are not OPEC members.'],
 [3,'Which country left OPEC in 2024?','Angola',['Nigeria','Gabon','Algeria'],'Angola left OPEC on 1 January 2024.'],
+[3,'Which country left OPEC and OPEC+ on 1 May 2026?','UAE',['Saudi Arabia','Kuwait','Iraq'],'The UAE had been a member since 1967 (through Abu Dhabi); OPEC now has 11 members.'],
 [3,'Which country is NOT a member of the Gulf Cooperation Council?','Iran',['Qatar','Oman','Bahrain'],'GCC: Saudi Arabia, the UAE, Kuwait, Qatar, Bahrain, Oman.'],
 [3,'Which country is NOT a member of the EAEU?','Tajikistan',['Armenia','Kyrgyzstan','Kazakhstan'],'EAEU: Russia, Belarus, Kazakhstan, Armenia, Kyrgyzstan.'],
 [3,'Which country became ASEAN’s 11th member in 2025?','Timor-Leste',['Papua New Guinea','Sri Lanka','Bangladesh'],'Timor-Leste was admitted to ASEAN in October 2025.'],
