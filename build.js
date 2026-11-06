@@ -24,3 +24,31 @@ ${scripts.map(f => `<script>\n${read(f)}\n</script>`).join('\n')}
 fs.mkdirSync(path.join(__dirname, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(__dirname, 'dist/index.html'), html);
 console.log('dist/index.html', (html.length / 1024).toFixed(0) + ' КБ');
+
+// Раздел «Философия»: dist/philosophy.html (шрифты — Google Fonts, остальное встроено)
+const philoScripts = ['js/philo-topics-1.js', 'js/philo-topics-2.js', 'js/philo-topics-3.js', 'js/philo-topics-4.js', 'js/philo-topics-5.js', 'js/philo-people.js', 'js/philo.js'];
+for (const f of philoScripts) if (/<\/script/i.test(read(f))) throw new Error(`${f} содержит </script>`);
+const philo = `<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2eadb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14100c" media="(prefers-color-scheme: dark)">
+<title>Философия — подготовка к экзамену</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Onest:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%239b2f1f'/%3E%3Ctext x='12' y='16.6' text-anchor='middle' font-family='Georgia,serif' font-size='14' fill='%23fbf7ee'%3E%CF%86%3C/text%3E%3C/svg%3E">
+<style>
+${read('css/philo.css')}
+</style>
+</head>
+<body>
+<div id="app"></div>
+${philoScripts.map(f => `<script>\n${read(f)}\n</script>`).join('\n')}
+</body>
+</html>
+`;
+fs.writeFileSync(path.join(__dirname, 'dist/philosophy.html'), philo);
+console.log('dist/philosophy.html', (philo.length / 1024).toFixed(0) + ' КБ');

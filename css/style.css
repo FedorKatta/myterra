@@ -495,3 +495,5 @@ details[open] summary::before { transform: rotate(90deg); }
   *, *::before, *::after { animation-duration: .001s !important; animation-delay: 0s !important; transition-duration: .001s !important; }
   .c.hl, .pin.hl { animation: none !important; }
 }
+
+a.tile { text-decoration: none; color: inherit; }
